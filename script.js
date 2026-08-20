@@ -991,7 +991,6 @@ if (dataForm) {
 
 }
 
-
 /* =====================================================
    17. SUBMIT KUESIONER
 ===================================================== */
@@ -1002,56 +1001,57 @@ if (submitKuesioner) {
         "click",
         async function () {
 
-            /*
-             * Jangan izinkan submit kedua
-             * saat proses pengiriman berlangsung.
-             */
-
             if (sedangMengirim) {
-
                 return;
-
             }
 
+
+            /* =================================================
+               AMBIL JAWABAN
+            ================================================= */
 
             const hasil =
                 ambilJawabanKuesioner();
 
 
+            /*
+             * Kalau masih ada soal yang belum dijawab,
+             * fungsi di atas akan menghentikan proses.
+             */
+
             if (!hasil) {
-
                 return;
-
             }
 
 
-            /*
-             * Ubah status tombol.
-             */
+            /* =================================================
+               STATUS MENGIRIM
+            ================================================= */
 
             sedangMengirim = true;
 
 
-            const teksTombolAsli =
+            const teksTombol =
                 submitKuesioner.textContent;
 
 
-            submitKuesioner.disabled =
-                true;
-
+            submitKuesioner.disabled = true;
 
             submitKuesioner.textContent =
                 "Mengirim hasil...";
 
 
-            /*
-             * Gabungkan data responden
-             * dengan hasil analisis.
-             */
+            /* =================================================
+               SIAPKAN DATA UNTUK API
+            ================================================= */
 
             const dataLengkap = {
 
-                ...hasil,
+                action:
+                    "saveResponse",
+
+
+                /* DATA RESPONDEN */
 
                 nama:
                     dataResponden.nama,
@@ -1060,59 +1060,218 @@ if (submitKuesioner) {
                     dataResponden.unitKerja,
 
                 email:
-                    dataResponden.email
+                    dataResponden.email,
+
+
+                /* HASIL ANALISIS */
+
+                totalSkor:
+                    hasil.totalSkor,
+
+                profil:
+                    hasil.kategori,
+
+                kategori:
+                    hasil.kategori,
+
+                namaKategori:
+                    hasil.namaKategori,
+
+                ringkasanKategori:
+                    hasil.ringkasanKategori,
+
+                deskripsiKategori:
+                    hasil.deskripsiKategori,
+
+
+                /* JAWABAN 20 SOAL */
+
+                jawaban:
+                    hasil.jawaban
 
             };
 
 
+            console.log(
+                "===================================="
+            );
+
+            console.log(
+                "DATA YANG DIKIRIM KE API:"
+            );
+
+            console.log(
+                dataLengkap
+            );
+
+            console.log(
+                "===================================="
+            );
+
+
+            /* =================================================
+               KIRIM KE GOOGLE APPS SCRIPT
+            ================================================= */
+
             try {
 
-                /*
-                 * KIRIM KE SERVER
-                 */
+                const response =
+                    await fetch(
+                        API_URL,
+                        {
 
-                const hasilAPI =
-                    await kirimDataKeAPI(
-                        hasil
+                            method: "POST",
+
+                            headers: {
+
+                                "Content-Type":
+                                    "text/plain;charset=utf-8"
+
+                            },
+
+                            body:
+                                JSON.stringify(
+                                    dataLengkap
+                                )
+
+                        }
                     );
 
 
                 console.log(
-                    "Data berhasil masuk database pusat.",
+                    "HTTP STATUS:",
+                    response.status
+                );
+
+
+                /* =================================================
+                   CEK RESPONSE HTTP
+                ================================================= */
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        "Server API mengembalikan HTTP " +
+                        response.status
+                    );
+
+                }
+
+
+                /* =================================================
+                   BACA RESPONSE API
+                ================================================= */
+
+                const hasilAPI =
+                    await response.json();
+
+
+                console.log(
+                    "RESPONSE DARI API:"
+                );
+
+                console.log(
                     hasilAPI
                 );
 
 
+                /* =================================================
+                   CEK APAKAH DATA BERHASIL DISIMPAN
+                ================================================= */
+
+                if (
+                    !hasilAPI ||
+                    hasilAPI.success !== true
+                ) {
+
+                    throw new Error(
+                        hasilAPI?.message ||
+                        "Data gagal disimpan ke server."
+                    );
+
+                }
+
+
+                /* =================================================
+                   BERHASIL
+                ================================================= */
+
+                console.log(
+                    "===================================="
+                );
+
+                console.log(
+                    "DATA BERHASIL DISIMPAN"
+                );
+
+                console.log(
+                    "ID RESPONDEN:",
+                    hasilAPI.id
+                );
+
+                console.log(
+                    "===================================="
+                );
+
+
                 /*
-                 * Tampilkan hasil kepada responden.
+                 * BARU SETELAH DATA BERHASIL
+                 * DISIMPAN DI SERVER,
+                 * TAMPILKAN HASIL KE RESPONDEN.
                  */
 
-                tampilkanHasil(
-                    dataLengkap
-                );
+                tampilkanHasil({
+
+                    ...hasil,
+
+                    nama:
+                        dataResponden.nama,
+
+                    unitKerja:
+                        dataResponden.unitKerja,
+
+                    email:
+                        dataResponden.email
+
+                });
 
 
             } catch (error) {
 
+                /* =================================================
+                   ERROR
+                ================================================= */
+
                 console.error(
-                    "GAGAL MENGIRIM DATA:",
+                    "===================================="
+                );
+
+                console.error(
+                    "GAGAL MENGIRIM DATA"
+                );
+
+                console.error(
                     error
+                );
+
+                console.error(
+                    "===================================="
                 );
 
 
                 alert(
-                    "Hasil analisis belum berhasil dikirim ke server.\n\n" +
-                    "Silakan periksa koneksi internet dan coba lagi."
+                    "Hasil analisis belum berhasil dikirim.\n\n" +
+                    "Silakan periksa koneksi internet lalu coba lagi."
                 );
-
-
-                return;
 
 
             } finally {
 
-                sedangMengirim =
-                    false;
+                /* =================================================
+                   KEMBALIKAN BUTTON
+                ================================================= */
+
+                sedangMengirim = false;
 
 
                 submitKuesioner.disabled =
@@ -1120,7 +1279,7 @@ if (submitKuesioner) {
 
 
                 submitKuesioner.textContent =
-                    teksTombolAsli;
+                    teksTombol;
 
             }
 
