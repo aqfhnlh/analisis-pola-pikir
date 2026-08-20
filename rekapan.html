@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="Dashboard admin untuk rekapan hasil analisis pola pikir."
+    >
+
+    <title>
+        Rekapan Hasil Analisis
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+</head>
+
+
+<body>
+
+
+<main class="rekapan-container">
+
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+    <section class="rekapan-header">
+
+        <h1>
+            Rekapan Hasil Analisis
+        </h1>
+
+        <p>
+            Daftar hasil analisis pola pikir seluruh responden.
+        </p>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         TOTAL RESPONDEN
+    ====================================================== -->
+
+    <section class="total-responden-card">
+
+        <div>
+
+            <span>
+                Total Responden
+            </span>
+
+            <p>
+                Jumlah seluruh responden yang telah
+                mengisi kuesioner.
+            </p>
+
+        </div>
+
+
+        <strong id="jumlahResponden">
+            0
+        </strong>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         RINGKASAN PROFIL
+    ====================================================== -->
+
+    <section class="ringkasan-section">
+
+        <div class="section-heading">
+
+            <h2>
+                Ringkasan Profil
+            </h2>
+
+            <p>
+                Distribusi jumlah responden berdasarkan
+                profil pola pikir.
+            </p>
+
+        </div>
+
+
+        <div class="profil-grid">
+
+
+            <!-- F -->
+
+            <div class="profil-summary-card">
+
+                <span>
+                    F
+                </span>
+
+                <strong id="jumlahF">
+                    0
+                </strong>
+
+                <small>
+                    responden
+                </small>
+
+            </div>
+
+
+
+            <!-- FG -->
+
+            <div class="profil-summary-card">
+
+                <span>
+                    FG
+                </span>
+
+                <strong id="jumlahFG">
+                    0
+                </strong>
+
+                <small>
+                    responden
+                </small>
+
+            </div>
+
+
+
+            <!-- GF -->
+
+            <div class="profil-summary-card">
+
+                <span>
+                    GF
+                </span>
+
+                <strong id="jumlahGF">
+                    0
+                </strong>
+
+                <small>
+                    responden
+                </small>
+
+            </div>
+
+
+
+            <!-- G -->
+
+            <div class="profil-summary-card">
+
+                <span>
+                    G
+                </span>
+
+                <strong id="jumlahG">
+                    0
+                </strong>
+
+                <small>
+                    responden
+                </small>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         DIAGRAM LINGKARAN
+    ====================================================== -->
+
+    <section class="diagram-section">
+
+        <div class="section-heading">
+
+            <h2>
+                Distribusi Profil Pola Pikir
+            </h2>
+
+            <p>
+                Persentase responden berdasarkan hasil
+                pemetaan profil pola pikir.
+            </p>
+
+        </div>
+
+
+        <div class="diagram-container">
+
+
+            <!-- DIAGRAM -->
+
+            <div class="donut-wrapper">
+
+                <div
+                    id="pieChart"
+                    class="pie-chart"
+                >
+
+                    <div class="pie-center">
+
+                        <strong id="pieTotal">
+                            0
+                        </strong>
+
+                        <span>
+                            Responden
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- LEGEND -->
+
+            <div class="diagram-legend">
+
+
+                <!-- F -->
+
+                <div class="legend-item">
+
+                    <span
+                        class="legend-color legend-f"
+                    ></span>
+
+                    <div>
+
+                        <strong>
+                            F
+                        </strong>
+
+                        <p id="detailF">
+                            0 responden · 0.0%
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- FG -->
+
+                <div class="legend-item">
+
+                    <span
+                        class="legend-color legend-fg"
+                    ></span>
+
+                    <div>
+
+                        <strong>
+                            FG
+                        </strong>
+
+                        <p id="detailFG">
+                            0 responden · 0.0%
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- GF -->
+
+                <div class="legend-item">
+
+                    <span
+                        class="legend-color legend-gf"
+                    ></span>
+
+                    <div>
+
+                        <strong>
+                            GF
+                        </strong>
+
+                        <p id="detailGF">
+                            0 responden · 0.0%
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- G -->
+
+                <div class="legend-item">
+
+                    <span
+                        class="legend-color legend-g"
+                    ></span>
+
+                    <div>
+
+                        <strong>
+                            G
+                        </strong>
+
+                        <p id="detailG">
+                            0 responden · 0.0%
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         INTERPRETASI PROFIL
+    ====================================================== -->
+
+    <section class="interpretasi-section">
+
+        <div class="section-heading">
+
+            <h2>
+                Interpretasi Profil Pola Pikir
+            </h2>
+
+            <p>
+                Gambaran umum karakteristik masing-masing
+                kategori profil pola pikir.
+            </p>
+
+        </div>
+
+
+        <div class="interpretasi-grid">
+
+
+            <!-- F -->
+
+            <article class="interpretasi-card">
+
+                <span class="interpretasi-badge">
+                    F
+                </span>
+
+                <h3>
+                    Fixed Mindset
+                </h3>
+
+                <p>
+                    Cenderung melihat kemampuan sebagai
+                    sesuatu yang relatif tetap. Tantangan
+                    atau kegagalan dapat lebih mudah
+                    dipandang sebagai cerminan keterbatasan
+                    kemampuan.
+                </p>
+
+            </article>
+
+
+
+            <!-- FG -->
+
+            <article class="interpretasi-card">
+
+                <span class="interpretasi-badge">
+                    FG
+                </span>
+
+                <h3>
+                    Fixed-Growth Mindset
+                </h3>
+
+                <p>
+                    Menunjukkan perpaduan kecenderungan
+                    pola pikir tetap dan bertumbuh. Pada
+                    situasi tertentu dapat melihat
+                    kemampuan sebagai sesuatu yang dapat
+                    berkembang, namun pada situasi lain
+                    masih terdapat kecenderungan melihat
+                    kemampuan sebagai sesuatu yang relatif
+                    tetap.
+                </p>
+
+            </article>
+
+
+
+            <!-- GF -->
+
+            <article class="interpretasi-card">
+
+                <span class="interpretasi-badge">
+                    GF
+                </span>
+
+                <h3>
+                    Growth-Fixed Mindset
+                </h3>
+
+                <p>
+                    Menunjukkan kecenderungan pola pikir
+                    bertumbuh yang cukup kuat, tetapi masih
+                    terdapat beberapa aspek pola pikir tetap.
+                    Individu dapat terbuka terhadap proses
+                    belajar dan pengembangan diri.
+                </p>
+
+            </article>
+
+
+
+            <!-- G -->
+
+            <article class="interpretasi-card">
+
+                <span class="interpretasi-badge">
+                    G
+                </span>
+
+                <h3>
+                    Growth Mindset
+                </h3>
+
+                <p>
+                    Cenderung melihat kemampuan sebagai
+                    sesuatu yang dapat dikembangkan melalui
+                    proses belajar, usaha, pengalaman,
+                    strategi, dan keterbukaan terhadap
+                    umpan balik.
+                </p>
+
+            </article>
+
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         FILTER & PENCARIAN
+    ====================================================== -->
+
+    <section class="filter-section">
+
+
+        <div class="filter-group">
+
+            <label for="filterUnitKerja">
+                Unit Kerja
+            </label>
+
+            <select id="filterUnitKerja">
+
+                <option value="semua">
+                    Semua Unit Kerja
+                </option>
+
+            </select>
+
+        </div>
+
+
+
+        <div class="filter-group">
+
+            <label for="cariResponden">
+                Cari Responden
+            </label>
+
+            <input
+                type="text"
+                id="cariResponden"
+                placeholder="Cari nama atau email..."
+            >
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- =====================================================
+         DATA RESPONDEN
+    ====================================================== -->
+
+    <section class="data-section">
+
+        <div class="data-header">
+
+            <div>
+
+                <h2>
+                    Data Responden
+                </h2>
+
+                <p>
+                    Daftar hasil analisis masing-masing
+                    responden.
+                </p>
+
+            </div>
+
+
+            <button
+                id="exportBtn"
+                type="button"
+            >
+                Export Data
+            </button>
+
+        </div>
+
+
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            No
+                        </th>
+
+                        <th>
+                            Nama
+                        </th>
+
+                        <th>
+                            Unit Kerja
+                        </th>
+
+                        <th>
+                            Email
+                        </th>
+
+                        <th>
+                            Grand Total
+                        </th>
+
+                        <th>
+                            Profil
+                        </th>
+
+                        <th>
+                            Tanggal
+                        </th>
+
+                        <th>
+                            Aksi
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody id="tabelRekapan">
+
+                    <!-- Data dibuat oleh rekapan.js -->
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+
+        <div
+            id="tidakAdaData"
+            class="tidak-ada-data hidden"
+        >
+
+            <p>
+                Belum ada responden yang mengisi
+                kuesioner.
+            </p>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         AKSI ADMIN
+    ====================================================== -->
+
+    <div class="admin-actions">
+
+        <button
+            id="kembaliBtn"
+            type="button"
+            class="kembali-btn"
+        >
+            Kembali ke Halaman Utama
+        </button>
+
+
+        <button
+            id="logoutBtn"
+            type="button"
+            class="logout-btn"
+        >
+            Logout Admin
+        </button>
+
+    </div>
+
+
+</main>
+
+
+
+<!-- =====================================================
+     MODAL DETAIL RESPONDEN
+====================================================== -->
+
+<div
+    id="modalDetail"
+    class="modal-detail hidden"
+>
+
+
+    <!-- OVERLAY -->
+
+    <div class="modal-overlay">
+    </div>
+
+
+
+    <!-- CONTENT -->
+
+    <div class="modal-content">
+
+
+        <!-- HEADER -->
+
+        <div class="modal-header">
+
+            <div>
+
+                <h2>
+                    Detail Hasil Responden
+                </h2>
+
+                <p>
+                    Detail identitas, hasil analisis,
+                    interpretasi, dan jawaban kuesioner.
+                </p>
+
+            </div>
+
+
+            <button
+                id="tutupModalBtn"
+                type="button"
+                class="tutup-modal"
+                aria-label="Tutup detail"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+
+        <!-- =================================================
+             IDENTITAS
+        ================================================== -->
+
+        <div class="detail-identitas">
+
+
+            <div class="detail-item">
+
+                <span>
+                    Nama
+                </span>
+
+                <strong id="detailNama">
+                    -
+                </strong>
+
+            </div>
+
+
+
+            <div class="detail-item">
+
+                <span>
+                    Unit Kerja
+                </span>
+
+                <strong id="detailUnitKerja">
+                    -
+                </strong>
+
+            </div>
+
+
+
+            <div class="detail-item">
+
+                <span>
+                    Email
+                </span>
+
+                <strong id="detailEmail">
+                    -
+                </strong>
+
+            </div>
+
+
+
+            <div class="detail-item">
+
+                <span>
+                    Profil
+                </span>
+
+                <strong id="detailKategori">
+                    -
+                </strong>
+
+            </div>
+
+
+
+            <div class="detail-item">
+
+                <span>
+                    Grand Total
+                </span>
+
+                <strong id="detailTotal">
+                    -
+                </strong>
+
+            </div>
+
+
+
+            <div class="detail-item">
+
+                <span>
+                    Tanggal
+                </span>
+
+                <strong id="detailTanggal">
+                    -
+                </strong>
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- =================================================
+             INTERPRETASI DETAIL
+        ================================================== -->
+
+        <div
+            id="detailInterpretasi"
+            class="detail-interpretasi"
+        >
+
+            <!-- Diisi oleh rekapan.js -->
+
+        </div>
+
+
+
+        <!-- =================================================
+             DETAIL JAWABAN
+        ================================================== -->
+
+        <div class="detail-jawaban-section">
+
+            <h3>
+                Detail Jawaban
+            </h3>
+
+
+            <div id="detailJawaban">
+
+                <!-- Jawaban dibuat oleh rekapan.js -->
+
+            </div>
+
+        </div>
+
+
+
+        <!-- TUTUP -->
+
+        <button
+            id="tutupModalBtnBottom"
+            type="button"
+            class="tutup-modal-bottom"
+        >
+            Tutup
+        </button>
+
+
+    </div>
+
+</div>
+
+
+
+<!-- =====================================================
+     JAVASCRIPT
+====================================================== -->
+
+<script src="rekapan.js"></script>
+
+
+</body>
+
+</html>
