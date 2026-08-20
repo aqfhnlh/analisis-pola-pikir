@@ -1,11 +1,26 @@
 /* =====================================================
    ANALISIS POLA PIKIR
-   SCRIPT.JS — VERSI FINAL
+   SCRIPT.JS — TERHUBUNG KE GOOGLE APPS SCRIPT API
 ===================================================== */
 
 
 /* =====================================================
-   1. DATA PERTANYAAN
+   1. KONFIGURASI API
+===================================================== */
+
+/*
+ * GANTI URL DI BAWAH INI DENGAN URL WEB APP APPS SCRIPT
+ *
+ * Contoh:
+ * https://script.google.com/macros/s/XXXXXXXXXXXX/exec
+ */
+
+const API_URL =
+    "https://script.google.com/macros/s/AKfycbzleJt9T8DZ4y-NgOUmREMy_7IXvfGbwlY9K6EKsZqNHUbTAvzzBcEJvpDQSPZjHPWNsw/exec";
+
+
+/* =====================================================
+   2. DATA PERTANYAAN
 ===================================================== */
 
 const pertanyaan = [
@@ -154,7 +169,7 @@ const pertanyaan = [
 
 
 /* =====================================================
-   2. PILIHAN JAWABAN
+   3. PILIHAN JAWABAN
 ===================================================== */
 
 const pilihanJawaban = [
@@ -165,14 +180,6 @@ const pilihanJawaban = [
     "Sangat Tidak Setuju"
 
 ];
-
-
-/* =====================================================
-   3. KONFIGURASI
-===================================================== */
-
-const STORAGE_KEY =
-    "rekapanPolaPikir";
 
 
 /* =====================================================
@@ -289,6 +296,14 @@ const deskripsiHasil =
    6. DATA RESPONDEN SEMENTARA
 ===================================================== */
 
+/*
+ * Data ini hanya berada di RAM/browser
+ * selama responden mengerjakan kuesioner.
+ *
+ * TIDAK menggunakan localStorage.
+ * TIDAK menggunakan Firebase.
+ */
+
 let dataResponden = {
 
     nama: "",
@@ -299,7 +314,14 @@ let dataResponden = {
 
 
 /* =====================================================
-   7. RESET KUESIONER
+   7. STATUS PENGIRIMAN
+===================================================== */
+
+let sedangMengirim = false;
+
+
+/* =====================================================
+   8. RESET KUESIONER
 ===================================================== */
 
 function resetKuesioner() {
@@ -308,27 +330,28 @@ function resetKuesioner() {
         document.getElementById("daftarSoal");
 
 
-    if (daftarSoal) {
-
-        daftarSoal
-            .querySelectorAll(
-                'input[type="radio"]'
-            )
-            .forEach(
-                function (radio) {
-
-                    radio.checked = false;
-
-                }
-            );
-
+    if (!daftarSoal) {
+        return;
     }
+
+
+    daftarSoal
+        .querySelectorAll(
+            'input[type="radio"]'
+        )
+        .forEach(
+            function (radio) {
+
+                radio.checked = false;
+
+            }
+        );
 
 }
 
 
 /* =====================================================
-   8. TAMPILKAN PERTANYAAN
+   9. TAMPILKAN PERTANYAAN
 ===================================================== */
 
 function tampilkanPertanyaan() {
@@ -362,11 +385,9 @@ function tampilkanPertanyaan() {
                     Soal ${soal.no}
                 </div>
 
-
                 <div class="teks-soal">
                     ${escapeHTML(soal.teks)}
                 </div>
-
 
                 <div class="pilihan">
 
@@ -388,9 +409,7 @@ function tampilkanPertanyaan() {
                                         >
 
                                         <span>
-                                            ${escapeHTML(
-                                                pilihan
-                                            )}
+                                            ${escapeHTML(pilihan)}
                                         </span>
 
                                     </label>
@@ -417,7 +436,7 @@ function tampilkanPertanyaan() {
 
 
 /* =====================================================
-   9. PINDAH HALAMAN
+   10. PINDAH HALAMAN
 ===================================================== */
 
 function tampilkanHalaman(
@@ -469,7 +488,7 @@ function tampilkanHalaman(
 
 
 /* =====================================================
-   10. TENTUKAN KATEGORI
+   11. TENTUKAN KATEGORI
 ===================================================== */
 
 function tentukanKategori(
@@ -477,8 +496,8 @@ function tentukanKategori(
 ) {
 
     if (
-        totalSkor >= 0
-        && totalSkor <= 20
+        totalSkor >= 0 &&
+        totalSkor <= 20
     ) {
 
         return "F";
@@ -487,8 +506,8 @@ function tentukanKategori(
 
 
     if (
-        totalSkor >= 21
-        && totalSkor <= 33
+        totalSkor >= 21 &&
+        totalSkor <= 33
     ) {
 
         return "FG";
@@ -497,8 +516,8 @@ function tentukanKategori(
 
 
     if (
-        totalSkor >= 34
-        && totalSkor <= 44
+        totalSkor >= 34 &&
+        totalSkor <= 44
     ) {
 
         return "GF";
@@ -507,8 +526,8 @@ function tentukanKategori(
 
 
     if (
-        totalSkor >= 45
-        && totalSkor <= 60
+        totalSkor >= 45 &&
+        totalSkor <= 60
     ) {
 
         return "G";
@@ -517,11 +536,12 @@ function tentukanKategori(
 
 
     return "-";
+
 }
 
 
 /* =====================================================
-   11. AMBIL JAWABAN KUESIONER
+   12. AMBIL JAWABAN KUESIONER
 ===================================================== */
 
 function ambilJawabanKuesioner() {
@@ -557,8 +577,7 @@ function ambilJawabanKuesioner() {
                 );
 
 
-            totalSkor +=
-                skor;
+            totalSkor += skor;
 
 
             const indexJawaban =
@@ -589,8 +608,6 @@ function ambilJawabanKuesioner() {
     );
 
 
-    /* VALIDASI */
-
     if (!semuaTerjawab) {
 
         alert(
@@ -601,8 +618,6 @@ function ambilJawabanKuesioner() {
 
     }
 
-
-    /* KATEGORI */
 
     const kategori =
         tentukanKategori(
@@ -648,57 +663,35 @@ function ambilJawabanKuesioner() {
 
 
 /* =====================================================
-   12. SIMPAN DATA
+   13. KIRIM DATA KE API
 ===================================================== */
 
-function simpanData(
+async function kirimDataKeAPI(
     hasil
 ) {
 
-    let dataLama = [];
+    /*
+     * Pastikan URL API sudah diisi.
+     */
 
+    if (
+        !API_URL ||
+        API_URL.includes(
+            "PASTE_URL_API"
+        )
+    ) {
 
-    try {
-
-        const dataTersimpan =
-            localStorage.getItem(
-                STORAGE_KEY
-            );
-
-
-        if (dataTersimpan) {
-
-            dataLama =
-                JSON.parse(
-                    dataTersimpan
-                );
-
-        }
-
-
-        if (
-            !Array.isArray(
-                dataLama
-            )
-        ) {
-
-            dataLama = [];
-
-        }
-
-    } catch (error) {
-
-        console.error(
-            "Gagal membaca data lama:",
-            error
+        throw new Error(
+            "URL API belum diisi di script.js."
         );
-
-        dataLama = [];
 
     }
 
 
-    const dataBaru = {
+    const dataYangDikirim = {
+
+        action:
+            "saveResponse",
 
         nama:
             dataResponden.nama,
@@ -711,6 +704,9 @@ function simpanData(
 
         totalSkor:
             hasil.totalSkor,
+
+        profil:
+            hasil.kategori,
 
         kategori:
             hasil.kategori,
@@ -725,66 +721,90 @@ function simpanData(
             hasil.deskripsiKategori,
 
         jawaban:
-            hasil.jawaban,
-
-        tanggal:
-            buatTanggal()
+            hasil.jawaban
 
     };
 
 
-    dataLama.push(
-        dataBaru
+    console.log(
+        "===================================="
+    );
+
+    console.log(
+        "MENGIRIM DATA KE API"
+    );
+
+    console.log(
+        dataYangDikirim
+    );
+
+    console.log(
+        "===================================="
     );
 
 
-    localStorage.setItem(
+    /*
+     * Content-Type text/plain digunakan
+     * agar request tidak memicu preflight
+     * CORS yang rumit pada Apps Script.
+     */
 
-        STORAGE_KEY,
-
-        JSON.stringify(
-            dataLama
-        )
-
-    );
-
-
-    return dataBaru;
-
-}
-
-
-/* =====================================================
-   13. FORMAT TANGGAL
-===================================================== */
-
-function buatTanggal() {
-
-    return new Date()
-        .toLocaleString(
-            "id-ID",
+    const response =
+        await fetch(
+            API_URL,
             {
 
-                day:
-                    "numeric",
+                method: "POST",
 
-                month:
-                    "numeric",
+                headers: {
 
-                year:
-                    "numeric",
+                    "Content-Type":
+                        "text/plain;charset=utf-8"
 
-                hour:
-                    "2-digit",
+                },
 
-                minute:
-                    "2-digit",
-
-                second:
-                    "2-digit"
+                body:
+                    JSON.stringify(
+                        dataYangDikirim
+                    )
 
             }
         );
+
+
+    if (!response.ok) {
+
+        throw new Error(
+            "Server API mengembalikan status " +
+            response.status
+        );
+
+    }
+
+
+    const hasilAPI =
+        await response.json();
+
+
+    console.log(
+        "RESPON API:",
+        hasilAPI
+    );
+
+
+    if (
+        !hasilAPI.success
+    ) {
+
+        throw new Error(
+            hasilAPI.message ||
+            "Data gagal disimpan."
+        );
+
+    }
+
+
+    return hasilAPI;
 
 }
 
@@ -808,8 +828,8 @@ function tampilkanHasil(
     if (kategoriHasil) {
 
         kategoriHasil.textContent =
-            `${data.kategori} — `
-            + `${data.namaKategori}`;
+            `${data.kategori} — ` +
+            `${data.namaKategori}`;
 
     }
 
@@ -826,13 +846,13 @@ function tampilkanHasil(
 
         ringkasanHasil.textContent =
 
-            `Anda memperoleh skor `
-            + `${data.totalSkor} dari `
-            + `maksimum 60 dan termasuk `
-            + `dalam kategori `
-            + `${data.kategori} `
-            + `(${data.namaKategori}). `
-            + `${data.ringkasanKategori}`;
+            `Anda memperoleh skor ` +
+            `${data.totalSkor} dari ` +
+            `maksimum 60 dan termasuk ` +
+            `dalam kategori ` +
+            `${data.kategori} ` +
+            `(${data.namaKategori}). ` +
+            `${data.ringkasanKategori}`;
 
     }
 
@@ -940,6 +960,25 @@ if (dataForm) {
                     : "";
 
 
+            /*
+             * Validasi tambahan.
+             */
+
+            if (
+                !dataResponden.nama ||
+                !dataResponden.unitKerja ||
+                !dataResponden.email
+            ) {
+
+                alert(
+                    "Semua data responden wajib diisi."
+                );
+
+                return;
+
+            }
+
+
             resetKuesioner();
 
 
@@ -961,26 +1000,129 @@ if (submitKuesioner) {
 
     submitKuesioner.addEventListener(
         "click",
-        function () {
+        async function () {
+
+            /*
+             * Jangan izinkan submit kedua
+             * saat proses pengiriman berlangsung.
+             */
+
+            if (sedangMengirim) {
+
+                return;
+
+            }
+
 
             const hasil =
                 ambilJawabanKuesioner();
 
 
             if (!hasil) {
+
                 return;
+
             }
 
 
-            const dataTersimpan =
-                simpanData(
-                    hasil
+            /*
+             * Ubah status tombol.
+             */
+
+            sedangMengirim = true;
+
+
+            const teksTombolAsli =
+                submitKuesioner.textContent;
+
+
+            submitKuesioner.disabled =
+                true;
+
+
+            submitKuesioner.textContent =
+                "Mengirim hasil...";
+
+
+            /*
+             * Gabungkan data responden
+             * dengan hasil analisis.
+             */
+
+            const dataLengkap = {
+
+                ...hasil,
+
+                nama:
+                    dataResponden.nama,
+
+                unitKerja:
+                    dataResponden.unitKerja,
+
+                email:
+                    dataResponden.email
+
+            };
+
+
+            try {
+
+                /*
+                 * KIRIM KE SERVER
+                 */
+
+                const hasilAPI =
+                    await kirimDataKeAPI(
+                        hasil
+                    );
+
+
+                console.log(
+                    "Data berhasil masuk database pusat.",
+                    hasilAPI
                 );
 
 
-            tampilkanHasil(
-                dataTersimpan
-            );
+                /*
+                 * Tampilkan hasil kepada responden.
+                 */
+
+                tampilkanHasil(
+                    dataLengkap
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "GAGAL MENGIRIM DATA:",
+                    error
+                );
+
+
+                alert(
+                    "Hasil analisis belum berhasil dikirim ke server.\n\n" +
+                    "Silakan periksa koneksi internet dan coba lagi."
+                );
+
+
+                return;
+
+
+            } finally {
+
+                sedangMengirim =
+                    false;
+
+
+                submitKuesioner.disabled =
+                    false;
+
+
+                submitKuesioner.textContent =
+                    teksTombolAsli;
+
+            }
 
         }
     );
@@ -997,6 +1139,12 @@ if (selesaiBtn) {
     selesaiBtn.addEventListener(
         "click",
         function () {
+
+            /*
+             * Hapus data dari RAM.
+             *
+             * Tidak ada localStorage.
+             */
 
             dataResponden = {
 
@@ -1036,8 +1184,8 @@ function escapeHTML(
 ) {
 
     if (
-        text === null
-        || text === undefined
+        text === null ||
+        text === undefined
     ) {
 
         return "";
@@ -1080,3 +1228,25 @@ function escapeHTML(
 ===================================================== */
 
 tampilkanPertanyaan();
+
+
+console.log(
+    "===================================="
+);
+
+console.log(
+    "ANALISIS POLA PIKIR"
+);
+
+console.log(
+    "Script berhasil dimuat."
+);
+
+console.log(
+    "API:",
+    API_URL
+);
+
+console.log(
+    "===================================="
+);
