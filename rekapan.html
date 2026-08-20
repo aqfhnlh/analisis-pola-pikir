@@ -1,1384 +1,999 @@
-/* =====================================================
-   REKAPAN.JS
-   Dashboard Admin - Rekapan Hasil Analisis Pola Pikir
-   DATA DIAMBIL DARI APPS SCRIPT API
-===================================================== */
+<!DOCTYPE html>
+<html lang="id">
 
+<head>
 
-/* =====================================================
-   1. CEK LOGIN ADMIN
-===================================================== */
+    <meta charset="UTF-8">
 
-const adminLogin = sessionStorage.getItem("adminLogin");
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-if (adminLogin !== "true") {
-    window.location.href = "admin.html";
-}
+    <meta
+        name="description"
+        content="Dashboard admin untuk melihat rekapan hasil analisis pola pikir."
+    >
 
+    <meta
+        name="robots"
+        content="noindex, nofollow"
+    >
 
-/* =====================================================
-   2. KONFIGURASI API
-===================================================== */
+    <title>
+        Rekapan Hasil Analisis
+    </title>
 
-/*
-   GANTI URL DI BAWAH DENGAN URL WEB APP APPS SCRIPT
-   YANG SUDAH KAMU DEPLOY.
+    <link
+        rel="stylesheet"
+        href="style.css?v=2"
+    >
 
-   Contoh:
-   https://script.google.com/macros/s/XXXXXXXX/exec
-*/
+</head>
 
-const API_URL =
-    "https://script.google.com/macros/s/AKfycbzleJt9T8DZ4y-NgOUmREMy_7IXvfGbwlY9K6EKsZqNHUbTAvzzBcEJvpDQSPZjHPWNsw/exec";
 
+<body>
 
-/* =====================================================
-   3. DATA GLOBAL
-===================================================== */
 
-let rekapan = [];
+<!-- =====================================================
+     DASHBOARD ADMIN
+====================================================== -->
 
+<main class="rekapan-container">
 
-/* =====================================================
-   4. ELEMENT HALAMAN
-===================================================== */
 
-const jumlahResponden =
-    document.getElementById("jumlahResponden");
+    <!-- =================================================
+         HEADER
+    ================================================== -->
 
-const jumlahF =
-    document.getElementById("jumlahF");
+    <header class="rekapan-header">
 
-const jumlahFG =
-    document.getElementById("jumlahFG");
+        <div class="page-header">
 
-const jumlahGF =
-    document.getElementById("jumlahGF");
+            <span class="admin-badge">
+                ADMIN DASHBOARD
+            </span>
 
-const jumlahG =
-    document.getElementById("jumlahG");
+            <h1>
+                Rekapan Hasil Analisis
+            </h1>
 
-const pieChart =
-    document.getElementById("pieChart");
+            <p>
+                Kelola dan pantau hasil analisis pola pikir
+                seluruh responden.
+            </p>
 
-const pieTotal =
-    document.getElementById("pieTotal");
+        </div>
 
-const detailF =
-    document.getElementById("detailF");
+    </header>
 
-const detailFG =
-    document.getElementById("detailFG");
 
-const detailGF =
-    document.getElementById("detailGF");
 
-const detailG =
-    document.getElementById("detailG");
+    <!-- =================================================
+         STATUS DATA
+    ================================================== -->
 
-const tabelRekapan =
-    document.getElementById("tabelRekapan");
+    <section
+        id="statusData"
+        class="status-data"
+        aria-live="polite"
+    >
 
-const tidakAdaData =
-    document.getElementById("tidakAdaData");
+        <span
+            id="statusIndicator"
+            class="status-indicator"
+        ></span>
 
-const filterUnitKerja =
-    document.getElementById("filterUnitKerja");
+        <span id="statusText">
+            Menghubungkan ke server...
+        </span>
 
-const cariResponden =
-    document.getElementById("cariResponden");
+    </section>
 
-const exportBtn =
-    document.getElementById("exportBtn");
 
-const kembaliBtn =
-    document.getElementById("kembaliBtn");
 
-const logoutBtn =
-    document.getElementById("logoutBtn");
+    <!-- =================================================
+         TOTAL RESPONDEN
+    ================================================== -->
 
+    <section class="total-responden-card">
 
-/* =====================================================
-   5. ELEMENT MODAL
-===================================================== */
+        <div class="total-info">
 
-const modalDetail =
-    document.getElementById("modalDetail");
+            <span class="card-label">
+                Total Responden
+            </span>
 
-const tutupModalBtn =
-    document.getElementById("tutupModalBtn");
+            <h2 id="jumlahResponden">
+                0
+            </h2>
 
-const tutupModalBtnBottom =
-    document.getElementById("tutupModalBtnBottom");
+            <p>
+                Jumlah seluruh responden yang
+                telah mengisi kuesioner.
+            </p>
 
-const detailNama =
-    document.getElementById("detailNama");
+        </div>
 
-const detailUnitKerja =
-    document.getElementById("detailUnitKerja");
 
-const detailEmail =
-    document.getElementById("detailEmail");
+        <div class="total-icon">
+            👥
+        </div>
 
-const detailKategori =
-    document.getElementById("detailKategori");
+    </section>
 
-const detailTotal =
-    document.getElementById("detailTotal");
 
-const detailTanggal =
-    document.getElementById("detailTanggal");
 
-const detailJawaban =
-    document.getElementById("detailJawaban");
+    <!-- =================================================
+         RINGKASAN PROFIL
+    ================================================== -->
 
+    <section class="ringkasan-section">
 
-/* =====================================================
-   6. ESCAPE HTML
-===================================================== */
+        <div class="section-heading">
 
-function escapeHTML(text) {
+            <div>
 
-    if (
-        text === null ||
-        text === undefined
-    ) {
-        return "";
-    }
-
-    return String(text)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-}
-
-
-/* =====================================================
-   7. FORMAT TANGGAL
-===================================================== */
-
-function formatTanggal(timestamp) {
-
-    if (!timestamp) {
-        return "-";
-    }
-
-    try {
-
-        const date =
-            new Date(timestamp);
-
-        if (isNaN(date.getTime())) {
-            return timestamp;
-        }
-
-        return date.toLocaleDateString(
-            "id-ID",
-            {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric"
-            }
-        );
-
-    } catch (error) {
-
-        return timestamp;
-
-    }
-}
-
-
-/* =====================================================
-   8. NORMALISASI DATA API
-===================================================== */
-
-function normalisasiData(data) {
-
-    return {
-        id:
-            data.id || "",
-
-        timestamp:
-            data.timestamp || "",
-
-        nama:
-            data.nama || "",
-
-        unitKerja:
-            data.unitKerja || "",
-
-        email:
-            data.email || "",
-
-        totalSkor:
-            data.totalSkor ?? 0,
-
-        /*
-           API kamu menggunakan "profil",
-           sedangkan rekapan lama menggunakan
-           "kategori".
-        */
-
-        kategori:
-            data.profil ||
-            data.kategori ||
-            "",
-
-        tanggal:
-            data.tanggal ||
-            formatTanggal(data.timestamp),
-
-        jawaban:
-            Array.isArray(data.jawaban)
-                ? data.jawaban
-                : []
-    };
-}
-
-
-/* =====================================================
-   9. AMBIL DATA DARI API
-===================================================== */
-
-async function ambilRekapan() {
-
-    if (
-        !API_URL ||
-        API_URL ===
-        "PASTE_URL_API_KAMU_DI_SINI"
-    ) {
-
-        console.error(
-            "API_URL belum diisi."
-        );
-
-        alert(
-            "URL API belum diatur di rekapan.js."
-        );
-
-        return false;
-    }
-
-
-    try {
-
-        console.log(
-            "Mengambil data dari API..."
-        );
-
-
-        const response =
-            await fetch(
-                API_URL +
-                "?action=getData"
-            );
-
-
-        console.log(
-            "HTTP STATUS:",
-            response.status
-        );
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                "HTTP Error " +
-                response.status
-            );
-        }
-
-
-        const result =
-            await response.json();
-
-
-        console.log(
-            "RESPONSE API:",
-            result
-        );
-
-
-        if (
-            !result ||
-            result.success !== true
-        ) {
-
-            throw new Error(
-                result?.message ||
-                "API mengembalikan error."
-            );
-        }
-
-
-        const data =
-            Array.isArray(result.data)
-                ? result.data
-                : [];
-
-
-        rekapan =
-            data.map(
-                normalisasiData
-            );
-
-
-        /*
-           Data terbaru paling atas.
-        */
-
-        rekapan.sort(
-            (a, b) =>
-                new Date(b.timestamp) -
-                new Date(a.timestamp)
-        );
-
-
-        console.log(
-            "DATA RESPONDEN:",
-            rekapan
-        );
-
-
-        isiFilterUnitKerja();
-
-        updateDashboard();
-
-
-        return true;
-
-
-    } catch (error) {
-
-        console.error(
-            "GAGAL MENGAMBIL DATA API:",
-            error
-        );
-
-
-        rekapan = [];
-
-        updateDashboard();
-
-
-        if (tidakAdaData) {
-
-            tidakAdaData.classList.remove(
-                "hidden"
-            );
-
-            tidakAdaData.innerHTML = `
-                <p>
-                    Gagal mengambil data dari server.
-                </p>
-
-                <small>
-                    ${escapeHTML(
-                        error.message
-                    )}
-                </small>
-            `;
-        }
-
-
-        return false;
-    }
-}
-
-
-/* =====================================================
-   10. DATA TERFILTER
-===================================================== */
-
-function ambilDataTerfilter() {
-
-    const unit =
-        filterUnitKerja
-            ? filterUnitKerja.value
-            : "semua";
-
-
-    const keyword =
-        cariResponden
-            ? cariResponden.value
-                .toLowerCase()
-                .trim()
-            : "";
-
-
-    return rekapan.filter(
-        function (data) {
-
-            const nama =
-                String(
-                    data.nama || ""
-                ).toLowerCase();
-
-
-            const email =
-                String(
-                    data.email || ""
-                ).toLowerCase();
-
-
-            const unitKerja =
-                String(
-                    data.unitKerja || ""
-                );
-
-
-            const cocokUnit =
-                unit === "semua" ||
-                unitKerja === unit;
-
-
-            const cocokSearch =
-                !keyword ||
-                nama.includes(keyword) ||
-                email.includes(keyword);
-
-
-            return (
-                cocokUnit &&
-                cocokSearch
-            );
-        }
-    );
-}
-
-
-/* =====================================================
-   11. FILTER UNIT KERJA
-===================================================== */
-
-function isiFilterUnitKerja() {
-
-    if (!filterUnitKerja) {
-        return;
-    }
-
-
-    const nilaiSebelumnya =
-        filterUnitKerja.value ||
-        "semua";
-
-
-    const daftarUnitKerja =
-        [
-            ...new Set(
-                rekapan
-                    .map(
-                        data =>
-                            data.unitKerja
-                    )
-                    .filter(Boolean)
-            )
-        ].sort(
-            (a, b) =>
-                String(a).localeCompare(
-                    String(b),
-                    "id"
-                )
-        );
-
-
-    filterUnitKerja.innerHTML = `
-        <option value="semua">
-            Semua Unit Kerja
-        </option>
-    `;
-
-
-    daftarUnitKerja.forEach(
-        function (unit) {
-
-            const option =
-                document.createElement(
-                    "option"
-                );
-
-            option.value = unit;
-            option.textContent = unit;
-
-            filterUnitKerja.appendChild(
-                option
-            );
-        }
-    );
-
-
-    if (
-        nilaiSebelumnya === "semua" ||
-        daftarUnitKerja.includes(
-            nilaiSebelumnya
-        )
-    ) {
-
-        filterUnitKerja.value =
-            nilaiSebelumnya;
-
-    } else {
-
-        filterUnitKerja.value =
-            "semua";
-    }
-}
-
-
-/* =====================================================
-   12. UPDATE DASHBOARD
-===================================================== */
-
-function updateDashboard() {
-
-    const data =
-        ambilDataTerfilter();
-
-
-    updateStatistik(data);
-
-    tampilkanTabel(data);
-}
-
-
-/* =====================================================
-   13. UPDATE STATISTIK
-===================================================== */
-
-function updateStatistik(data) {
-
-    const total =
-        data.length;
-
-
-    const dataF =
-        data.filter(
-            item =>
-                item.kategori === "F"
-        ).length;
-
-
-    const dataFG =
-        data.filter(
-            item =>
-                item.kategori === "FG"
-        ).length;
-
-
-    const dataGF =
-        data.filter(
-            item =>
-                item.kategori === "GF"
-        ).length;
-
-
-    const dataG =
-        data.filter(
-            item =>
-                item.kategori === "G"
-        ).length;
-
-
-    if (jumlahResponden) {
-        jumlahResponden.textContent =
-            total;
-    }
-
-
-    if (jumlahF) {
-        jumlahF.textContent =
-            dataF;
-    }
-
-
-    if (jumlahFG) {
-        jumlahFG.textContent =
-            dataFG;
-    }
-
-
-    if (jumlahGF) {
-        jumlahGF.textContent =
-            dataGF;
-    }
-
-
-    if (jumlahG) {
-        jumlahG.textContent =
-            dataG;
-    }
-
-
-    if (pieTotal) {
-        pieTotal.textContent =
-            total;
-    }
-
-
-    const persenF =
-        total > 0
-            ? (dataF / total) * 100
-            : 0;
-
-
-    const persenFG =
-        total > 0
-            ? (dataFG / total) * 100
-            : 0;
-
-
-    const persenGF =
-        total > 0
-            ? (dataGF / total) * 100
-            : 0;
-
-
-    const persenG =
-        total > 0
-            ? (dataG / total) * 100
-            : 0;
-
-
-    if (detailF) {
-        detailF.textContent =
-            `${dataF} responden · ${persenF.toFixed(1)}%`;
-    }
-
-
-    if (detailFG) {
-        detailFG.textContent =
-            `${dataFG} responden · ${persenFG.toFixed(1)}%`;
-    }
-
-
-    if (detailGF) {
-        detailGF.textContent =
-            `${dataGF} responden · ${persenGF.toFixed(1)}%`;
-    }
-
-
-    if (detailG) {
-        detailG.textContent =
-            `${dataG} responden · ${persenG.toFixed(1)}%`;
-    }
-
-
-    updateDiagram(
-        total,
-        persenF,
-        persenFG,
-        persenGF,
-        persenG
-    );
-}
-
-
-/* =====================================================
-   14. UPDATE DIAGRAM
-===================================================== */
-
-function updateDiagram(
-    total,
-    persenF,
-    persenFG,
-    persenGF,
-    persenG
-) {
-
-    if (!pieChart) {
-        return;
-    }
-
-
-    if (total === 0) {
-
-        pieChart.style.background =
-            "#eeeeee";
-
-        return;
-    }
-
-
-    const batasF =
-        persenF;
-
-
-    const batasFG =
-        batasF + persenFG;
-
-
-    const batasGF =
-        batasFG + persenGF;
-
-
-    pieChart.style.background =
-        `conic-gradient(
-            #555555 0% ${batasF}%,
-            #888888 ${batasF}% ${batasFG}%,
-            #aaaaaa ${batasFG}% ${batasGF}%,
-            #222222 ${batasGF}% 100%
-        )`;
-}
-
-
-/* =====================================================
-   15. TAMPILKAN TABEL
-===================================================== */
-
-function tampilkanTabel(data) {
-
-    if (!tabelRekapan) {
-        return;
-    }
-
-
-    tabelRekapan.innerHTML = "";
-
-
-    if (!data || data.length === 0) {
-
-        if (tidakAdaData) {
-
-            tidakAdaData.classList.remove(
-                "hidden"
-            );
-        }
-
-        return;
-    }
-
-
-    if (tidakAdaData) {
-
-        tidakAdaData.classList.add(
-            "hidden"
-        );
-    }
-
-
-    data.forEach(
-        function (responden, index) {
-
-            const row =
-                document.createElement(
-                    "tr"
-                );
-
-
-            row.innerHTML = `
-
-                <td>
-                    ${index + 1}
-                </td>
-
-                <td>
-                    ${escapeHTML(
-                        responden.nama
-                    )}
-                </td>
-
-                <td>
-                    ${escapeHTML(
-                        responden.unitKerja
-                    )}
-                </td>
-
-                <td>
-                    ${escapeHTML(
-                        responden.email
-                    )}
-                </td>
-
-                <td>
-                    ${responden.totalSkor}
-                </td>
-
-                <td>
-                    <span class="profil-badge">
-                        ${escapeHTML(
-                            responden.kategori
-                        )}
-                    </span>
-                </td>
-
-                <td>
-                    ${escapeHTML(
-                        responden.tanggal
-                    )}
-                </td>
-
-                <td>
-
-                    <div class="aksi-container">
-
-                        <button
-                            type="button"
-                            class="detail-btn"
-                            onclick="bukaDetail('${escapeHTML(
-                                responden.id
-                            )}')"
-                        >
-                            Lihat Detail
-                        </button>
-
-                    </div>
-
-                </td>
-            `;
-
-
-            tabelRekapan.appendChild(
-                row
-            );
-        }
-    );
-}
-
-
-/* =====================================================
-   16. CARI RESPONDEN
-===================================================== */
-
-if (cariResponden) {
-
-    cariResponden.addEventListener(
-        "input",
-        function () {
-
-            updateDashboard();
-
-        }
-    );
-}
-
-
-/* =====================================================
-   17. FILTER UNIT KERJA
-===================================================== */
-
-if (filterUnitKerja) {
-
-    filterUnitKerja.addEventListener(
-        "change",
-        function () {
-
-            updateDashboard();
-
-        }
-    );
-}
-
-
-/* =====================================================
-   18. DETAIL RESPONDEN
-===================================================== */
-
-function bukaDetail(id) {
-
-    const data =
-        rekapan.find(
-            item =>
-                item.id === id
-        );
-
-
-    if (!data) {
-
-        console.error(
-            "Data responden tidak ditemukan:",
-            id
-        );
-
-        return;
-    }
-
-
-    if (detailNama) {
-        detailNama.textContent =
-            data.nama || "-";
-    }
-
-
-    if (detailUnitKerja) {
-        detailUnitKerja.textContent =
-            data.unitKerja || "-";
-    }
-
-
-    if (detailEmail) {
-        detailEmail.textContent =
-            data.email || "-";
-    }
-
-
-    if (detailKategori) {
-        detailKategori.textContent =
-            data.kategori || "-";
-    }
-
-
-    if (detailTotal) {
-        detailTotal.textContent =
-            data.totalSkor ?? "-";
-    }
-
-
-    if (detailTanggal) {
-        detailTanggal.textContent =
-            data.tanggal || "-";
-    }
-
-
-    if (!detailJawaban) {
-        return;
-    }
-
-
-    detailJawaban.innerHTML = "";
-
-
-    if (
-        !Array.isArray(
-            data.jawaban
-        ) ||
-        data.jawaban.length === 0
-    ) {
-
-        detailJawaban.innerHTML = `
-
-            <div class="detail-kosong">
+                <h2>
+                    Ringkasan Profil
+                </h2>
 
                 <p>
-                    Detail jawaban tidak tersedia
-                    untuk data responden ini.
+                    Distribusi responden berdasarkan
+                    profil pola pikir.
                 </p>
 
             </div>
 
-        `;
-
-    } else {
-
-        data.jawaban.forEach(
-            function (item) {
-
-                const card =
-                    document.createElement(
-                        "div"
-                    );
+        </div>
 
 
-                card.classList.add(
-                    "detail-soal-card"
-                );
+        <div class="profil-grid">
 
 
-                card.innerHTML = `
+            <!-- F -->
 
-                    <div class="detail-soal-header">
+            <article class="profil-summary-card">
 
-                        <strong>
-                            Soal ${escapeHTML(
-                                item.no
-                            )}
+                <span class="profil-code">
+                    F
+                </span>
+
+                <div>
+
+                    <strong id="jumlahF">
+                        0
+                    </strong>
+
+                    <small>
+                        responden
+                    </small>
+
+                </div>
+
+                <p>
+                    Fixed Mindset
+                </p>
+
+            </article>
+
+
+
+            <!-- FG -->
+
+            <article class="profil-summary-card">
+
+                <span class="profil-code">
+                    FG
+                </span>
+
+                <div>
+
+                    <strong id="jumlahFG">
+                        0
+                    </strong>
+
+                    <small>
+                        responden
+                    </small>
+
+                </div>
+
+                <p>
+                    Fixed-Growth Mindset
+                </p>
+
+            </article>
+
+
+
+            <!-- GF -->
+
+            <article class="profil-summary-card">
+
+                <span class="profil-code">
+                    GF
+                </span>
+
+                <div>
+
+                    <strong id="jumlahGF">
+                        0
+                    </strong>
+
+                    <small>
+                        responden
+                    </small>
+
+                </div>
+
+                <p>
+                    Growth-Fixed Mindset
+                </p>
+
+            </article>
+
+
+
+            <!-- G -->
+
+            <article class="profil-summary-card">
+
+                <span class="profil-code">
+                    G
+                </span>
+
+                <div>
+
+                    <strong id="jumlahG">
+                        0
+                    </strong>
+
+                    <small>
+                        responden
+                    </small>
+
+                </div>
+
+                <p>
+                    Growth Mindset
+                </p>
+
+            </article>
+
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =================================================
+         DISTRIBUSI PROFIL
+    ================================================== -->
+
+    <section class="diagram-section">
+
+        <div class="section-heading">
+
+            <h2>
+                Distribusi Profil Pola Pikir
+            </h2>
+
+            <p>
+                Persentase responden berdasarkan
+                hasil pemetaan profil.
+            </p>
+
+        </div>
+
+
+        <div class="diagram-container">
+
+
+            <!-- DONUT -->
+
+            <div class="donut-wrapper">
+
+                <div
+                    id="pieChart"
+                    class="pie-chart"
+                    aria-label="Diagram distribusi profil"
+                >
+
+                    <div class="pie-center">
+
+                        <strong id="pieTotal">
+                            0
                         </strong>
 
                         <span>
-                            Skor ${escapeHTML(
-                                item.skor
-                            )}
+                            Responden
                         </span>
 
                     </div>
 
+                </div>
 
-                    <p class="detail-pertanyaan">
-
-                        ${escapeHTML(
-                            item.pertanyaan
-                        )}
-
-                    </p>
+            </div>
 
 
-                    <div class="detail-jawaban-text">
 
-                        <span>
-                            Jawaban
-                        </span>
+            <!-- LEGEND -->
+
+            <div class="diagram-legend">
+
+
+                <div class="legend-item">
+
+                    <span
+                        class="legend-color legend-f"
+                    ></span>
+
+                    <div>
 
                         <strong>
-                            ${escapeHTML(
-                                item.jawaban
-                            )}
+                            F
                         </strong>
+
+                        <p id="detailF">
+                            0 responden · 0.0%
+                        </p>
 
                     </div>
 
-                `;
+                </div>
 
 
-                detailJawaban.appendChild(
-                    card
-                );
-            }
-        );
-    }
 
+                <div class="legend-item">
 
-    if (modalDetail) {
+                    <span
+                        class="legend-color legend-fg"
+                    ></span>
 
-        modalDetail.classList.remove(
-            "hidden"
-        );
+                    <div>
 
-        document.body.classList.add(
-            "modal-open"
-        );
-    }
-}
+                        <strong>
+                            FG
+                        </strong>
 
+                        <p id="detailFG">
+                            0 responden · 0.0%
+                        </p>
 
-/* =====================================================
-   19. TUTUP MODAL
-===================================================== */
+                    </div>
 
-function tutupModal() {
+                </div>
 
-    if (!modalDetail) {
-        return;
-    }
 
 
-    modalDetail.classList.add(
-        "hidden"
-    );
+                <div class="legend-item">
 
+                    <span
+                        class="legend-color legend-gf"
+                    ></span>
 
-    document.body.classList.remove(
-        "modal-open"
-    );
-}
+                    <div>
 
+                        <strong>
+                            GF
+                        </strong>
 
-if (tutupModalBtn) {
+                        <p id="detailGF">
+                            0 responden · 0.0%
+                        </p>
 
-    tutupModalBtn.addEventListener(
-        "click",
-        tutupModal
-    );
-}
+                    </div>
 
+                </div>
 
-if (tutupModalBtnBottom) {
 
-    tutupModalBtnBottom.addEventListener(
-        "click",
-        tutupModal
-    );
-}
 
+                <div class="legend-item">
 
-const modalOverlay =
-    document.querySelector(
-        ".modal-overlay"
-    );
+                    <span
+                        class="legend-color legend-g"
+                    ></span>
 
+                    <div>
 
-if (modalOverlay) {
+                        <strong>
+                            G
+                        </strong>
 
-    modalOverlay.addEventListener(
-        "click",
-        tutupModal
-    );
-}
+                        <p id="detailG">
+                            0 responden · 0.0%
+                        </p>
 
+                    </div>
 
-document.addEventListener(
-    "keydown",
-    function (event) {
+                </div>
 
-        if (
-            event.key === "Escape" &&
-            modalDetail &&
-            !modalDetail.classList.contains(
-                "hidden"
-            )
-        ) {
 
-            tutupModal();
-        }
-    }
-);
+            </div>
 
+        </div>
 
-/* =====================================================
-   20. EXPORT CSV
-===================================================== */
+    </section>
 
-function csvEscape(text) {
 
-    if (
-        text === null ||
-        text === undefined
-    ) {
 
-        return "";
-    }
+    <!-- =================================================
+         INTERPRETASI
+    ================================================== -->
 
+    <section class="interpretasi-section">
 
-    return `"${String(text)
-        .replace(/"/g, '""')}"`;
-}
+        <div class="section-heading">
 
+            <h2>
+                Interpretasi Profil
+            </h2>
 
-if (exportBtn) {
+            <p>
+                Gambaran umum karakteristik
+                masing-masing kategori.
+            </p>
 
-    exportBtn.addEventListener(
-        "click",
-        function () {
+        </div>
 
-            const data =
-                ambilDataTerfilter();
 
+        <div class="interpretasi-grid">
 
-            if (data.length === 0) {
 
-                alert(
-                    "Tidak ada data yang dapat diekspor."
-                );
+            <!-- F -->
 
-                return;
-            }
+            <article class="interpretasi-card">
 
+                <span class="interpretasi-badge">
+                    F
+                </span>
 
-            let csv =
-                "No,Nama,Unit Kerja,Email,Grand Total,Profil,Tanggal\n";
+                <h3>
+                    Fixed Mindset
+                </h3>
 
+                <p>
+                    Cenderung melihat kemampuan sebagai
+                    sesuatu yang relatif tetap. Tantangan
+                    atau kegagalan dapat lebih mudah
+                    dipandang sebagai cerminan
+                    keterbatasan kemampuan.
+                </p>
 
-            data.forEach(
-                function (
-                    responden,
-                    index
-                ) {
+            </article>
 
-                    csv += [
 
-                        index + 1,
 
-                        csvEscape(
-                            responden.nama
-                        ),
+            <!-- FG -->
 
-                        csvEscape(
-                            responden.unitKerja
-                        ),
+            <article class="interpretasi-card">
 
-                        csvEscape(
-                            responden.email
-                        ),
+                <span class="interpretasi-badge">
+                    FG
+                </span>
 
-                        responden.totalSkor,
+                <h3>
+                    Fixed-Growth Mindset
+                </h3>
 
-                        csvEscape(
-                            responden.kategori
-                        ),
+                <p>
+                    Menunjukkan perpaduan kecenderungan
+                    pola pikir tetap dan bertumbuh. Pada
+                    situasi tertentu dapat melihat
+                    kemampuan sebagai sesuatu yang dapat
+                    berkembang, namun pada situasi lain
+                    masih terdapat kecenderungan melihat
+                    kemampuan sebagai sesuatu yang relatif
+                    tetap.
+                </p>
 
-                        csvEscape(
-                            responden.tanggal
-                        )
+            </article>
 
-                    ].join(",") + "\n";
-                }
-            );
 
 
-            const blob =
-                new Blob(
-                    [
-                        "\uFEFF",
-                        csv
-                    ],
-                    {
-                        type:
-                            "text/csv;charset=utf-8;"
-                    }
-                );
+            <!-- GF -->
 
+            <article class="interpretasi-card">
 
-            const url =
-                URL.createObjectURL(
-                    blob
-                );
+                <span class="interpretasi-badge">
+                    GF
+                </span>
 
+                <h3>
+                    Growth-Fixed Mindset
+                </h3>
 
-            const link =
-                document.createElement(
-                    "a"
-                );
+                <p>
+                    Menunjukkan kecenderungan pola pikir
+                    bertumbuh yang cukup kuat, tetapi masih
+                    terdapat beberapa aspek pola pikir tetap.
+                    Individu dapat terbuka terhadap proses
+                    belajar dan pengembangan diri.
+                </p>
 
+            </article>
 
-            link.href = url;
 
-            link.download =
-                "rekapan-pola-pikir.csv";
 
+            <!-- G -->
 
-            document.body.appendChild(
-                link
-            );
+            <article class="interpretasi-card">
 
+                <span class="interpretasi-badge">
+                    G
+                </span>
 
-            link.click();
+                <h3>
+                    Growth Mindset
+                </h3>
 
+                <p>
+                    Cenderung melihat kemampuan sebagai
+                    sesuatu yang dapat dikembangkan melalui
+                    proses belajar, usaha, pengalaman,
+                    strategi, dan keterbukaan terhadap
+                    umpan balik.
+                </p>
 
-            document.body.removeChild(
-                link
-            );
+            </article>
 
 
-            URL.revokeObjectURL(
-                url
-            );
-        }
-    );
-}
+        </div>
 
+    </section>
 
-/* =====================================================
-   21. KEMBALI
-===================================================== */
 
-if (kembaliBtn) {
 
-    kembaliBtn.addEventListener(
-        "click",
-        function () {
+    <!-- =================================================
+         FILTER
+    ================================================== -->
 
-            window.location.href =
-                "index.html";
+    <section class="filter-section">
 
-        }
-    );
-}
+        <div class="filter-group">
 
+            <label for="filterUnitKerja">
+                Unit Kerja
+            </label>
 
-/* =====================================================
-   22. LOGOUT
-===================================================== */
+            <select id="filterUnitKerja">
 
-if (logoutBtn) {
+                <option value="semua">
+                    Semua Unit Kerja
+                </option>
 
-    logoutBtn.addEventListener(
-        "click",
-        function () {
+            </select>
 
-            const yakin =
-                confirm(
-                    "Apakah Anda yakin ingin logout?"
-                );
+        </div>
 
 
-            if (!yakin) {
-                return;
-            }
 
+        <div class="filter-group">
 
-            sessionStorage.removeItem(
-                "adminLogin"
-            );
+            <label for="cariResponden">
+                Cari Responden
+            </label>
 
+            <input
+                type="search"
+                id="cariResponden"
+                placeholder="Cari nama atau email..."
+                autocomplete="off"
+            >
 
-            window.location.href =
-                "admin.html";
-        }
-    );
-}
+        </div>
 
+    </section>
 
-/* =====================================================
-   23. AUTO REFRESH API
-===================================================== */
 
-/*
-   Dashboard mengambil data terbaru
-   dari server setiap 10 detik.
-*/
 
-setInterval(
-    function () {
+    <!-- =================================================
+         DATA RESPONDEN
+    ================================================== -->
 
-        ambilRekapan();
+    <section class="data-section">
 
-    },
-    10000
-);
 
+        <!-- HEADER DATA -->
 
-/* =====================================================
-   24. REFRESH SAAT TAB AKTIF
-===================================================== */
+        <div class="data-header">
 
-window.addEventListener(
-    "focus",
-    function () {
+            <div>
 
-        ambilRekapan();
+                <h2>
+                    Data Responden
+                </h2>
 
-    }
-);
+                <p>
+                    Daftar hasil analisis
+                    masing-masing responden.
+                </p>
 
+            </div>
 
-document.addEventListener(
-    "visibilitychange",
-    function () {
 
-        if (
-            document.visibilityState ===
-            "visible"
-        ) {
+            <button
+                id="exportBtn"
+                type="button"
+                class="primary-btn"
+            >
+                Export Data
+            </button>
 
-            ambilRekapan();
+        </div>
 
-        }
-    }
-);
 
 
-/* =====================================================
-   25. LOAD PERTAMA
-===================================================== */
+        <!-- LOADING -->
 
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
+        <div
+            id="loadingData"
+            class="loading-data"
+        >
 
-        console.log(
-            "================================"
-        );
+            <div class="loading-spinner"></div>
 
-        console.log(
-            "REKAPAN ADMIN"
-        );
+            <p>
+                Memuat data responden...
+            </p>
 
-        console.log(
-            "Menghubungkan ke API..."
-        );
+        </div>
 
-        console.log(
-            "API:",
-            API_URL
-        );
 
-        console.log(
-            "================================"
-        );
 
+        <!-- TABLE -->
 
-        ambilRekapan();
+        <div class="table-wrapper">
 
-    }
-);
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            No
+                        </th>
+
+                        <th>
+                            Nama
+                        </th>
+
+                        <th>
+                            Unit Kerja
+                        </th>
+
+                        <th>
+                            Email
+                        </th>
+
+                        <th>
+                            Grand Total
+                        </th>
+
+                        <th>
+                            Profil
+                        </th>
+
+                        <th>
+                            Tanggal
+                        </th>
+
+                        <th>
+                            Aksi
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody id="tabelRekapan">
+
+                    <!--
+                        Data diisi otomatis
+                        oleh rekapan.js
+                    -->
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+
+        <!-- EMPTY STATE -->
+
+        <div
+            id="tidakAdaData"
+            class="tidak-ada-data hidden"
+        >
+
+            <div class="empty-icon">
+                📋
+            </div>
+
+            <h3>
+                Belum Ada Data
+            </h3>
+
+            <p>
+                Belum ada responden yang
+                mengisi kuesioner.
+            </p>
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- =================================================
+         ADMIN ACTION
+    ================================================== -->
+
+    <div class="admin-actions">
+
+        <button
+            id="kembaliBtn"
+            type="button"
+            class="kembali-btn"
+        >
+            Kembali ke Halaman Utama
+        </button>
+
+
+        <button
+            id="logoutBtn"
+            type="button"
+            class="logout-btn"
+        >
+            Logout Admin
+        </button>
+
+    </div>
+
+
+</main>
+
+
+
+<!-- =====================================================
+     MODAL DETAIL RESPONDEN
+====================================================== -->
+
+<div
+    id="modalDetail"
+    class="modal-detail hidden"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modalDetailTitle"
+>
+
+
+    <!-- OVERLAY -->
+
+    <div
+        class="modal-overlay"
+        id="modalOverlay"
+    ></div>
+
+
+
+    <!-- CONTENT -->
+
+    <div class="modal-content">
+
+
+        <!-- HEADER -->
+
+        <div class="modal-header">
+
+            <div>
+
+                <span class="modal-label">
+                    DETAIL RESPONDEN
+                </span>
+
+                <h2 id="modalDetailTitle">
+                    Detail Hasil Responden
+                </h2>
+
+                <p>
+                    Informasi identitas, hasil analisis,
+                    interpretasi, dan jawaban kuesioner.
+                </p>
+
+            </div>
+
+
+            <button
+                id="tutupModalBtn"
+                type="button"
+                class="tutup-modal"
+                aria-label="Tutup detail"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+
+        <!-- =================================================
+             IDENTITAS
+        ================================================== -->
+
+        <section class="detail-identitas">
+
+
+            <div class="detail-item">
+
+                <span>
+                    Nama
+                </span>
+
+                <strong id="detailNama">
+                    -
+                </strong>
+
+            </div>
+
+
+
+            <div class="detail-item">
+
+                <span>
+                    Unit Kerja
+                </span>
+
+                <strong id="detailUnitKerja">
+                    -
+                </strong>
+
+            </div>
+
+
+
+            <div class="detail-item">
+
+                <span>
+                    Email
+                </span>
+
+                <strong id="detailEmail">
+                    -
+                </strong>
+
+            </div>
+
+
+
+            <div class="detail-item">
+
+                <span>
+                    Profil
+                </span>
+
+                <strong id="detailKategori">
+                    -
+                </strong>
+
+            </div>
+
+
+
+            <div class="detail-item">
+
+                <span>
+                    Grand Total
+                </span>
+
+                <strong id="detailTotal">
+                    -
+                </strong>
+
+            </div>
+
+
+
+            <div class="detail-item">
+
+                <span>
+                    Tanggal
+                </span>
+
+                <strong id="detailTanggal">
+                    -
+                </strong>
+
+            </div>
+
+
+        </section>
+
+
+
+        <!-- =================================================
+             INTERPRETASI
+        ================================================== -->
+
+        <section
+            id="detailInterpretasi"
+            class="detail-interpretasi"
+        >
+
+            <!-- Diisi oleh rekapan.js -->
+
+        </section>
+
+
+
+        <!-- =================================================
+             DETAIL JAWABAN
+        ================================================== -->
+
+        <section class="detail-jawaban-section">
+
+            <div class="detail-section-heading">
+
+                <h3>
+                    Detail Jawaban
+                </h3>
+
+                <p>
+                    Jawaban responden pada setiap
+                    pernyataan kuesioner.
+                </p>
+
+            </div>
+
+
+            <div id="detailJawaban">
+
+                <!--
+                    Jawaban dibuat oleh rekapan.js
+                -->
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             TUTUP
+        ================================================== -->
+
+        <button
+            id="tutupModalBtnBottom"
+            type="button"
+            class="tutup-modal-bottom"
+        >
+            Tutup
+        </button>
+
+
+    </div>
+
+</div>
+
+
+
+<!-- =====================================================
+     JAVASCRIPT
+====================================================== -->
+
+<script
+    src="rekapan.js?v=2"
+    defer
+></script>
+
+
+</body>
+
+</html>
