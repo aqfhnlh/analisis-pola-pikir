@@ -1,30 +1,35 @@
 /* =====================================================
    REKAPAN.JS
-   Dashboard Admin - Terhubung Google Apps Script API
+   Dashboard Admin - Rekapan Hasil Analisis Pola Pikir
+   DATA DIAMBIL DARI APPS SCRIPT API
 ===================================================== */
 
 
 /* =====================================================
-   1. KONFIGURASI API
+   1. CEK LOGIN ADMIN
 ===================================================== */
+
+const adminLogin = sessionStorage.getItem("adminLogin");
+
+if (adminLogin !== "true") {
+    window.location.href = "admin.html";
+}
+
+
+/* =====================================================
+   2. KONFIGURASI API
+===================================================== */
+
+/*
+   GANTI URL DI BAWAH DENGAN URL WEB APP APPS SCRIPT
+   YANG SUDAH KAMU DEPLOY.
+
+   Contoh:
+   https://script.google.com/macros/s/XXXXXXXX/exec
+*/
 
 const API_URL =
     "https://script.google.com/macros/s/AKfycbzleJt9T8DZ4y-NgOUmREMy_7IXvfGbwlY9K6EKsZqNHUbTAvzzBcEJvpDQSPZjHPWNsw/exec";
-
-
-/* =====================================================
-   2. CEK LOGIN ADMIN
-===================================================== */
-
-const adminLogin =
-    sessionStorage.getItem("adminLogin");
-
-if (adminLogin !== "true") {
-
-    window.location.href =
-        "admin.html";
-
-}
 
 
 /* =====================================================
@@ -33,524 +38,242 @@ if (adminLogin !== "true") {
 
 let rekapan = [];
 
-let dataTerfilter = [];
-
 
 /* =====================================================
-   4. INTERPRETASI PROFIL
-===================================================== */
-
-const interpretasiProfil = {
-
-    F: {
-
-        nama:
-            "Fixed Mindset",
-
-        ringkasan:
-            "Cenderung melihat kemampuan sebagai sesuatu yang relatif tetap.",
-
-        deskripsi:
-            "Cenderung melihat kemampuan sebagai sesuatu yang relatif tetap. Tantangan atau kegagalan dapat lebih mudah dipandang sebagai cerminan keterbatasan kemampuan. Pengembangan diri dapat didukung dengan membuka diri terhadap proses belajar, usaha, pengalaman, tantangan, dan umpan balik."
-
-    },
-
-
-    FG: {
-
-        nama:
-            "Fixed-Growth Mindset",
-
-        ringkasan:
-            "Menunjukkan perpaduan kecenderungan pola pikir tetap dan bertumbuh.",
-
-        deskripsi:
-            "Pada beberapa aspek masih terdapat kecenderungan melihat kemampuan sebagai sesuatu yang relatif tetap, sementara pada aspek lain sudah terbuka terhadap perkembangan dan pembelajaran. Menerima umpan balik dan belajar dari pengalaman dapat membantu memperkuat pola pikir bertumbuh."
-
-    },
-
-
-    GF: {
-
-        nama:
-            "Growth-Fixed Mindset",
-
-        ringkasan:
-            "Menunjukkan kecenderungan pola pikir bertumbuh yang cukup kuat, tetapi masih terdapat beberapa aspek pola pikir tetap.",
-
-        deskripsi:
-            "Cenderung melihat kemampuan sebagai sesuatu yang dapat dikembangkan melalui belajar, pengalaman, usaha, dan umpan balik. Namun, dalam situasi tertentu masih dapat muncul pandangan yang lebih tetap."
-
-    },
-
-
-    G: {
-
-        nama:
-            "Growth Mindset",
-
-        ringkasan:
-            "Cenderung memiliki pola pikir bertumbuh dalam memandang kemampuan dan pengembangan diri.",
-
-        deskripsi:
-            "Cenderung melihat kemampuan sebagai sesuatu yang dapat dikembangkan melalui proses belajar, usaha, pengalaman, strategi, tantangan, dan keterbukaan terhadap umpan balik."
-
-    }
-
-};
-
-
-/* =====================================================
-   5. ELEMENT HTML
+   4. ELEMENT HALAMAN
 ===================================================== */
 
 const jumlahResponden =
-    document.getElementById(
-        "jumlahResponden"
-    );
-
+    document.getElementById("jumlahResponden");
 
 const jumlahF =
-    document.getElementById(
-        "jumlahF"
-    );
-
+    document.getElementById("jumlahF");
 
 const jumlahFG =
-    document.getElementById(
-        "jumlahFG"
-    );
-
+    document.getElementById("jumlahFG");
 
 const jumlahGF =
-    document.getElementById(
-        "jumlahGF"
-    );
-
+    document.getElementById("jumlahGF");
 
 const jumlahG =
-    document.getElementById(
-        "jumlahG"
-    );
-
+    document.getElementById("jumlahG");
 
 const pieChart =
-    document.getElementById(
-        "pieChart"
-    );
-
+    document.getElementById("pieChart");
 
 const pieTotal =
-    document.getElementById(
-        "pieTotal"
-    );
-
+    document.getElementById("pieTotal");
 
 const detailF =
-    document.getElementById(
-        "detailF"
-    );
-
+    document.getElementById("detailF");
 
 const detailFG =
-    document.getElementById(
-        "detailFG"
-    );
-
+    document.getElementById("detailFG");
 
 const detailGF =
-    document.getElementById(
-        "detailGF"
-    );
-
+    document.getElementById("detailGF");
 
 const detailG =
-    document.getElementById(
-        "detailG"
-    );
-
+    document.getElementById("detailG");
 
 const tabelRekapan =
-    document.getElementById(
-        "tabelRekapan"
-    );
-
+    document.getElementById("tabelRekapan");
 
 const tidakAdaData =
-    document.getElementById(
-        "tidakAdaData"
-    );
-
+    document.getElementById("tidakAdaData");
 
 const filterUnitKerja =
-    document.getElementById(
-        "filterUnitKerja"
-    );
-
+    document.getElementById("filterUnitKerja");
 
 const cariResponden =
-    document.getElementById(
-        "cariResponden"
-    );
-
+    document.getElementById("cariResponden");
 
 const exportBtn =
-    document.getElementById(
-        "exportBtn"
-    );
-
+    document.getElementById("exportBtn");
 
 const kembaliBtn =
-    document.getElementById(
-        "kembaliBtn"
-    );
-
+    document.getElementById("kembaliBtn");
 
 const logoutBtn =
-    document.getElementById(
-        "logoutBtn"
-    );
+    document.getElementById("logoutBtn");
 
 
 /* =====================================================
-   6. ELEMENT STATUS & LOADING
-===================================================== */
-
-const statusData =
-    document.getElementById(
-        "statusData"
-    );
-
-
-const statusIndicator =
-    document.getElementById(
-        "statusIndicator"
-    );
-
-
-const statusText =
-    document.getElementById(
-        "statusText"
-    );
-
-
-const loadingData =
-    document.getElementById(
-        "loadingData"
-    );
-
-
-/* =====================================================
-   7. ELEMENT MODAL
+   5. ELEMENT MODAL
 ===================================================== */
 
 const modalDetail =
-    document.getElementById(
-        "modalDetail"
-    );
-
-
-const modalOverlay =
-    document.getElementById(
-        "modalOverlay"
-    );
-
+    document.getElementById("modalDetail");
 
 const tutupModalBtn =
-    document.getElementById(
-        "tutupModalBtn"
-    );
-
+    document.getElementById("tutupModalBtn");
 
 const tutupModalBtnBottom =
-    document.getElementById(
-        "tutupModalBtnBottom"
-    );
-
+    document.getElementById("tutupModalBtnBottom");
 
 const detailNama =
-    document.getElementById(
-        "detailNama"
-    );
-
+    document.getElementById("detailNama");
 
 const detailUnitKerja =
-    document.getElementById(
-        "detailUnitKerja"
-    );
-
+    document.getElementById("detailUnitKerja");
 
 const detailEmail =
-    document.getElementById(
-        "detailEmail"
-    );
-
+    document.getElementById("detailEmail");
 
 const detailKategori =
-    document.getElementById(
-        "detailKategori"
-    );
-
+    document.getElementById("detailKategori");
 
 const detailTotal =
-    document.getElementById(
-        "detailTotal"
-    );
-
+    document.getElementById("detailTotal");
 
 const detailTanggal =
-    document.getElementById(
-        "detailTanggal"
-    );
-
-
-const detailInterpretasi =
-    document.getElementById(
-        "detailInterpretasi"
-    );
-
+    document.getElementById("detailTanggal");
 
 const detailJawaban =
-    document.getElementById(
-        "detailJawaban"
-    );
+    document.getElementById("detailJawaban");
 
 
 /* =====================================================
-   8. ESCAPE HTML
+   6. ESCAPE HTML
 ===================================================== */
 
-function escapeHTML(value) {
+function escapeHTML(text) {
 
     if (
-        value === null ||
-        value === undefined
+        text === null ||
+        text === undefined
     ) {
-
         return "";
-
     }
 
-
-    return String(value)
-
-        .replace(
-            /&/g,
-            "&amp;"
-        )
-
-        .replace(
-            /</g,
-            "&lt;"
-        )
-
-        .replace(
-            />/g,
-            "&gt;"
-        )
-
-        .replace(
-            /"/g,
-            "&quot;"
-        )
-
-        .replace(
-            /'/g,
-            "&#039;"
-        );
-
+    return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
 
 
 /* =====================================================
-   9. AMBIL PROFIL
-===================================================== */
-
-/*
- * API saat ini mengirim:
- *
- * profil: "FG"
- *
- * Kita juga tetap mendukung
- * kategori jika nanti digunakan.
- */
-
-function ambilProfil(data) {
-
-    return String(
-        data.profil ||
-        data.kategori ||
-        ""
-    )
-        .trim()
-        .toUpperCase();
-
-}
-
-
-/* =====================================================
-   10. FORMAT TANGGAL
+   7. FORMAT TANGGAL
 ===================================================== */
 
 function formatTanggal(timestamp) {
 
     if (!timestamp) {
-
         return "-";
-
     }
-
-
-    const tanggal =
-        new Date(timestamp);
-
-
-    if (
-        Number.isNaN(
-            tanggal.getTime()
-        )
-    ) {
-
-        return String(
-            timestamp
-        );
-
-    }
-
-
-    return tanggal.toLocaleString(
-        "id-ID",
-        {
-
-            day: "2-digit",
-
-            month: "2-digit",
-
-            year: "numeric",
-
-            hour: "2-digit",
-
-            minute: "2-digit"
-
-        }
-    );
-
-}
-
-
-/* =====================================================
-   11. SET STATUS
-===================================================== */
-
-function setStatus(
-    message,
-    success = true
-) {
-
-    if (statusText) {
-
-        statusText.textContent =
-            message;
-
-    }
-
-
-    if (statusIndicator) {
-
-        statusIndicator.classList.toggle(
-            "success",
-            success
-        );
-
-        statusIndicator.classList.toggle(
-            "error",
-            !success
-        );
-
-    }
-
-}
-
-
-/* =====================================================
-   12. LOADING
-===================================================== */
-
-function setLoading(
-    loading
-) {
-
-    if (!loadingData) {
-
-        return;
-
-    }
-
-
-    if (loading) {
-
-        loadingData.classList.remove(
-            "hidden"
-        );
-
-    } else {
-
-        loadingData.classList.add(
-            "hidden"
-        );
-
-    }
-
-}
-
-
-/* =====================================================
-   13. AMBIL DATA DARI API
-===================================================== */
-
-async function ambilDataAPI() {
 
     try {
 
-        setLoading(true);
+        const date =
+            new Date(timestamp);
 
-        setStatus(
-            "Menghubungkan ke server...",
-            true
+        if (isNaN(date.getTime())) {
+            return timestamp;
+        }
+
+        return date.toLocaleDateString(
+            "id-ID",
+            {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric"
+            }
         );
 
+    } catch (error) {
+
+        return timestamp;
+
+    }
+}
+
+
+/* =====================================================
+   8. NORMALISASI DATA API
+===================================================== */
+
+function normalisasiData(data) {
+
+    return {
+        id:
+            data.id || "",
+
+        timestamp:
+            data.timestamp || "",
+
+        nama:
+            data.nama || "",
+
+        unitKerja:
+            data.unitKerja || "",
+
+        email:
+            data.email || "",
+
+        totalSkor:
+            data.totalSkor ?? 0,
+
+        /*
+           API kamu menggunakan "profil",
+           sedangkan rekapan lama menggunakan
+           "kategori".
+        */
+
+        kategori:
+            data.profil ||
+            data.kategori ||
+            "",
+
+        tanggal:
+            data.tanggal ||
+            formatTanggal(data.timestamp),
+
+        jawaban:
+            Array.isArray(data.jawaban)
+                ? data.jawaban
+                : []
+    };
+}
+
+
+/* =====================================================
+   9. AMBIL DATA DARI API
+===================================================== */
+
+async function ambilRekapan() {
+
+    if (
+        !API_URL ||
+        API_URL ===
+        "PASTE_URL_API_KAMU_DI_SINI"
+    ) {
+
+        console.error(
+            "API_URL belum diisi."
+        );
+
+        alert(
+            "URL API belum diatur di rekapan.js."
+        );
+
+        return false;
+    }
+
+
+    try {
 
         console.log(
-            "===================================="
+            "Mengambil data dari API..."
         );
-
-        console.log(
-            "MENGAMBIL DATA DARI API"
-        );
-
-        console.log(
-            API_URL
-        );
-
-
-        const url =
-            API_URL +
-            "?action=getData&_=" +
-            Date.now();
 
 
         const response =
             await fetch(
-                url,
-                {
-
-                    method:
-                        "GET",
-
-                    cache:
-                        "no-store"
-
-                }
+                API_URL +
+                "?action=getData"
             );
 
 
@@ -563,143 +286,60 @@ async function ambilDataAPI() {
         if (!response.ok) {
 
             throw new Error(
-                "API mengembalikan HTTP " +
+                "HTTP Error " +
                 response.status
             );
-
         }
 
 
-        const hasil =
+        const result =
             await response.json();
 
 
         console.log(
             "RESPONSE API:",
-            hasil
+            result
         );
 
 
         if (
-            !hasil ||
-            hasil.success !== true
+            !result ||
+            result.success !== true
         ) {
 
             throw new Error(
-                hasil &&
-                hasil.message
-                    ? hasil.message
-                    : "Response API tidak valid."
+                result?.message ||
+                "API mengembalikan error."
             );
-
         }
 
 
-        if (
-            !Array.isArray(
-                hasil.data
-            )
-        ) {
+        const data =
+            Array.isArray(result.data)
+                ? result.data
+                : [];
 
-            throw new Error(
-                "Format data API tidak valid."
-            );
-
-        }
-
-
-        /*
-         * DATA DARI API
-         */
 
         rekapan =
-            hasil.data.map(
-                function (item) {
-
-                    return {
-
-                        id:
-                            item.id || "",
-
-                        timestamp:
-                            item.timestamp || "",
-
-                        nama:
-                            item.nama || "",
-
-                        unitKerja:
-                            item.unitKerja || "",
-
-                        email:
-                            item.email || "",
-
-                        totalSkor:
-                            Number(
-                                item.totalSkor || 0
-                            ),
-
-                        profil:
-                            ambilProfil(
-                                item
-                            ),
-
-                        jawaban:
-                            Array.isArray(
-                                item.jawaban
-                            )
-                                ? item.jawaban
-                                : [],
-
-                        namaKategori:
-                            item.namaKategori ||
-                            "",
-
-                        ringkasanKategori:
-                            item.ringkasanKategori ||
-                            "",
-
-                        deskripsiKategori:
-                            item.deskripsiKategori ||
-                            ""
-
-                    };
-
-                }
+            data.map(
+                normalisasiData
             );
 
 
         /*
-         * Urutkan terbaru
-         * paling atas.
-         */
+           Data terbaru paling atas.
+        */
 
         rekapan.sort(
-            function (a, b) {
-
-                return (
-                    new Date(
-                        b.timestamp
-                    ) -
-                    new Date(
-                        a.timestamp
-                    )
-                );
-
-            }
+            (a, b) =>
+                new Date(b.timestamp) -
+                new Date(a.timestamp)
         );
 
 
         console.log(
-            "TOTAL DATA:",
-            rekapan.length
-        );
-
-
-        setStatus(
-            "Terhubung · " +
-            rekapan.length +
-            " responden",
-            true
+            "DATA RESPONDEN:",
+            rekapan
         );
 
 
@@ -708,8 +348,10 @@ async function ambilDataAPI() {
         updateDashboard();
 
 
-    }
-    catch (error) {
+        return true;
+
+
+    } catch (error) {
 
         console.error(
             "GAGAL MENGAMBIL DATA API:",
@@ -719,18 +361,7 @@ async function ambilDataAPI() {
 
         rekapan = [];
 
-
-        setStatus(
-            "Gagal terhubung ke API",
-            false
-        );
-
-
-        if (tabelRekapan) {
-
-            tabelRekapan.innerHTML = "";
-
-        }
+        updateDashboard();
 
 
         if (tidakAdaData) {
@@ -740,150 +371,26 @@ async function ambilDataAPI() {
             );
 
             tidakAdaData.innerHTML = `
-
-                <div class="empty-icon">
-                    ⚠️
-                </div>
-
-                <h3>
-                    Gagal Memuat Data
-                </h3>
-
                 <p>
+                    Gagal mengambil data dari server.
+                </p>
+
+                <small>
                     ${escapeHTML(
                         error.message
                     )}
-                </p>
-
-                <button
-                    type="button"
-                    class="primary-btn"
-                    onclick="ambilDataAPI()"
-                >
-                    Coba Lagi
-                </button>
-
+                </small>
             `;
-
         }
 
+
+        return false;
     }
-    finally {
-
-        setLoading(false);
-
-    }
-
 }
 
 
 /* =====================================================
-   14. FILTER UNIT KERJA
-===================================================== */
-
-function isiFilterUnitKerja() {
-
-    if (!filterUnitKerja) {
-
-        return;
-
-    }
-
-
-    const nilaiLama =
-        filterUnitKerja.value ||
-        "semua";
-
-
-    const daftarUnit =
-        [
-            ...new Set(
-
-                rekapan
-
-                    .map(
-                        function (item) {
-
-                            return (
-                                item.unitKerja ||
-                                ""
-                            ).trim();
-
-                        }
-                    )
-
-                    .filter(Boolean)
-
-            )
-        ]
-        .sort(
-            function (a, b) {
-
-                return a.localeCompare(
-                    b,
-                    "id"
-                );
-
-            }
-        );
-
-
-    filterUnitKerja.innerHTML = `
-
-        <option value="semua">
-            Semua Unit Kerja
-        </option>
-
-    `;
-
-
-    daftarUnit.forEach(
-        function (unit) {
-
-            const option =
-                document.createElement(
-                    "option"
-                );
-
-
-            option.value =
-                unit;
-
-
-            option.textContent =
-                unit;
-
-
-            filterUnitKerja.appendChild(
-                option
-            );
-
-        }
-    );
-
-
-    if (
-        nilaiLama === "semua" ||
-        daftarUnit.includes(
-            nilaiLama
-        )
-    ) {
-
-        filterUnitKerja.value =
-            nilaiLama;
-
-    } else {
-
-        filterUnitKerja.value =
-            "semua";
-
-    }
-
-}
-
-
-/* =====================================================
-   15. DATA TERFILTER
+   10. DATA TERFILTER
 ===================================================== */
 
 function ambilDataTerfilter() {
@@ -903,23 +410,23 @@ function ambilDataTerfilter() {
 
 
     return rekapan.filter(
-        function (item) {
+        function (data) {
 
             const nama =
                 String(
-                    item.nama || ""
+                    data.nama || ""
                 ).toLowerCase();
 
 
             const email =
                 String(
-                    item.email || ""
+                    data.email || ""
                 ).toLowerCase();
 
 
             const unitKerja =
                 String(
-                    item.unitKerja || ""
+                    data.unitKerja || ""
                 );
 
 
@@ -930,254 +437,251 @@ function ambilDataTerfilter() {
 
             const cocokSearch =
                 !keyword ||
-                nama.includes(
-                    keyword
-                ) ||
-                email.includes(
-                    keyword
-                );
+                nama.includes(keyword) ||
+                email.includes(keyword);
 
 
             return (
                 cocokUnit &&
                 cocokSearch
             );
-
         }
     );
-
 }
 
 
 /* =====================================================
-   16. UPDATE DASHBOARD
+   11. FILTER UNIT KERJA
+===================================================== */
+
+function isiFilterUnitKerja() {
+
+    if (!filterUnitKerja) {
+        return;
+    }
+
+
+    const nilaiSebelumnya =
+        filterUnitKerja.value ||
+        "semua";
+
+
+    const daftarUnitKerja =
+        [
+            ...new Set(
+                rekapan
+                    .map(
+                        data =>
+                            data.unitKerja
+                    )
+                    .filter(Boolean)
+            )
+        ].sort(
+            (a, b) =>
+                String(a).localeCompare(
+                    String(b),
+                    "id"
+                )
+        );
+
+
+    filterUnitKerja.innerHTML = `
+        <option value="semua">
+            Semua Unit Kerja
+        </option>
+    `;
+
+
+    daftarUnitKerja.forEach(
+        function (unit) {
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+            option.value = unit;
+            option.textContent = unit;
+
+            filterUnitKerja.appendChild(
+                option
+            );
+        }
+    );
+
+
+    if (
+        nilaiSebelumnya === "semua" ||
+        daftarUnitKerja.includes(
+            nilaiSebelumnya
+        )
+    ) {
+
+        filterUnitKerja.value =
+            nilaiSebelumnya;
+
+    } else {
+
+        filterUnitKerja.value =
+            "semua";
+    }
+}
+
+
+/* =====================================================
+   12. UPDATE DASHBOARD
 ===================================================== */
 
 function updateDashboard() {
 
-    dataTerfilter =
+    const data =
         ambilDataTerfilter();
 
 
-    updateStatistik(
-        dataTerfilter
-    );
+    updateStatistik(data);
 
-
-    tampilkanTabel(
-        dataTerfilter
-    );
-
+    tampilkanTabel(data);
 }
 
 
 /* =====================================================
-   17. UPDATE STATISTIK
+   13. UPDATE STATISTIK
 ===================================================== */
 
-function updateStatistik(
-    data
-) {
+function updateStatistik(data) {
 
     const total =
         data.length;
 
 
-    const jumlahFData =
+    const dataF =
         data.filter(
             item =>
-                ambilProfil(item) ===
-                "F"
+                item.kategori === "F"
         ).length;
 
 
-    const jumlahFGData =
+    const dataFG =
         data.filter(
             item =>
-                ambilProfil(item) ===
-                "FG"
+                item.kategori === "FG"
         ).length;
 
 
-    const jumlahGFData =
+    const dataGF =
         data.filter(
             item =>
-                ambilProfil(item) ===
-                "GF"
+                item.kategori === "GF"
         ).length;
 
 
-    const jumlahGData =
+    const dataG =
         data.filter(
             item =>
-                ambilProfil(item) ===
-                "G"
+                item.kategori === "G"
         ).length;
 
-
-    /*
-     * TOTAL
-     */
 
     if (jumlahResponden) {
-
         jumlahResponden.textContent =
             total;
-
     }
 
-
-    if (pieTotal) {
-
-        pieTotal.textContent =
-            total;
-
-    }
-
-
-    /*
-     * PROFIL
-     */
 
     if (jumlahF) {
-
         jumlahF.textContent =
-            jumlahFData;
-
+            dataF;
     }
 
 
     if (jumlahFG) {
-
         jumlahFG.textContent =
-            jumlahFGData;
-
+            dataFG;
     }
 
 
     if (jumlahGF) {
-
         jumlahGF.textContent =
-            jumlahGFData;
-
+            dataGF;
     }
 
 
     if (jumlahG) {
-
         jumlahG.textContent =
-            jumlahGData;
-
+            dataG;
     }
 
 
-    /*
-     * PERSENTASE
-     */
+    if (pieTotal) {
+        pieTotal.textContent =
+            total;
+    }
+
 
     const persenF =
-        total
-            ? (
-                jumlahFData /
-                total
-            ) * 100
+        total > 0
+            ? (dataF / total) * 100
             : 0;
 
 
     const persenFG =
-        total
-            ? (
-                jumlahFGData /
-                total
-            ) * 100
+        total > 0
+            ? (dataFG / total) * 100
             : 0;
 
 
     const persenGF =
-        total
-            ? (
-                jumlahGFData /
-                total
-            ) * 100
+        total > 0
+            ? (dataGF / total) * 100
             : 0;
 
 
     const persenG =
-        total
-            ? (
-                jumlahGData /
-                total
-            ) * 100
+        total > 0
+            ? (dataG / total) * 100
             : 0;
 
 
-    /*
-     * DETAIL
-     */
-
     if (detailF) {
-
         detailF.textContent =
-            jumlahFData +
-            " responden · " +
-            persenF.toFixed(1) +
-            "%";
-
+            `${dataF} responden · ${persenF.toFixed(1)}%`;
     }
 
 
     if (detailFG) {
-
         detailFG.textContent =
-            jumlahFGData +
-            " responden · " +
-            persenFG.toFixed(1) +
-            "%";
-
+            `${dataFG} responden · ${persenFG.toFixed(1)}%`;
     }
 
 
     if (detailGF) {
-
         detailGF.textContent =
-            jumlahGFData +
-            " responden · " +
-            persenGF.toFixed(1) +
-            "%";
-
+            `${dataGF} responden · ${persenGF.toFixed(1)}%`;
     }
 
 
     if (detailG) {
-
         detailG.textContent =
-            jumlahGData +
-            " responden · " +
-            persenG.toFixed(1) +
-            "%";
-
+            `${dataG} responden · ${persenG.toFixed(1)}%`;
     }
 
 
-    /*
-     * DIAGRAM
-     */
-
     updateDiagram(
+        total,
         persenF,
         persenFG,
         persenGF,
         persenG
     );
-
 }
 
 
 /* =====================================================
-   18. UPDATE DIAGRAM DONUT
+   14. UPDATE DIAGRAM
 ===================================================== */
 
 function updateDiagram(
+    total,
     persenF,
     persenFG,
     persenGF,
@@ -1185,28 +689,16 @@ function updateDiagram(
 ) {
 
     if (!pieChart) {
-
         return;
-
     }
 
 
-    const totalPersen =
-        persenF +
-        persenFG +
-        persenGF +
-        persenG;
-
-
-    if (
-        totalPersen <= 0
-    ) {
+    if (total === 0) {
 
         pieChart.style.background =
             "#eeeeee";
 
         return;
-
     }
 
 
@@ -1215,61 +707,47 @@ function updateDiagram(
 
 
     const batasFG =
-        batasF +
-        persenFG;
+        batasF + persenFG;
 
 
     const batasGF =
-        batasFG +
-        persenGF;
+        batasFG + persenGF;
 
 
     pieChart.style.background =
-
         `conic-gradient(
             #555555 0% ${batasF}%,
             #888888 ${batasF}% ${batasFG}%,
             #aaaaaa ${batasFG}% ${batasGF}%,
             #222222 ${batasGF}% 100%
         )`;
-
 }
 
 
 /* =====================================================
-   19. TAMPILKAN TABEL
+   15. TAMPILKAN TABEL
 ===================================================== */
 
-function tampilkanTabel(
-    data
-) {
+function tampilkanTabel(data) {
 
     if (!tabelRekapan) {
-
         return;
-
     }
 
 
-    tabelRekapan.innerHTML =
-        "";
+    tabelRekapan.innerHTML = "";
 
 
-    if (
-        !data ||
-        data.length === 0
-    ) {
+    if (!data || data.length === 0) {
 
         if (tidakAdaData) {
 
             tidakAdaData.classList.remove(
                 "hidden"
             );
-
         }
 
         return;
-
     }
 
 
@@ -1278,27 +756,11 @@ function tampilkanTabel(
         tidakAdaData.classList.add(
             "hidden"
         );
-
     }
 
 
     data.forEach(
-        function (
-            responden,
-            index
-        ) {
-
-            const profil =
-                ambilProfil(
-                    responden
-                );
-
-
-            const tanggal =
-                formatTanggal(
-                    responden.timestamp
-                );
-
+        function (responden, index) {
 
             const row =
                 document.createElement(
@@ -1331,276 +793,158 @@ function tampilkanTabel(
                 </td>
 
                 <td>
-                    <strong>
-                        ${Number(
-                            responden.totalSkor || 0
-                        )}
-                    </strong>
+                    ${responden.totalSkor}
                 </td>
 
                 <td>
-
                     <span class="profil-badge">
-
                         ${escapeHTML(
-                            profil || "-"
+                            responden.kategori
                         )}
-
                     </span>
-
                 </td>
 
                 <td>
                     ${escapeHTML(
-                        tanggal
+                        responden.tanggal
                     )}
                 </td>
 
                 <td>
 
-                    <button
-                        type="button"
-                        class="detail-btn"
-                        data-index="${index}"
-                    >
-                        Lihat Detail
-                    </button>
+                    <div class="aksi-container">
+
+                        <button
+                            type="button"
+                            class="detail-btn"
+                            onclick="bukaDetail('${escapeHTML(
+                                responden.id
+                            )}')"
+                        >
+                            Lihat Detail
+                        </button>
+
+                    </div>
 
                 </td>
-
             `;
-
-
-            const detailButton =
-                row.querySelector(
-                    ".detail-btn"
-                );
-
-
-            if (detailButton) {
-
-                detailButton.addEventListener(
-                    "click",
-                    function () {
-
-                        bukaDetail(
-                            index
-                        );
-
-                    }
-                );
-
-            }
 
 
             tabelRekapan.appendChild(
                 row
             );
-
         }
     );
-
 }
 
 
 /* =====================================================
-   20. DETAIL RESPONDEN
+   16. CARI RESPONDEN
 ===================================================== */
 
-function bukaDetail(
-    index
-) {
+if (cariResponden) {
+
+    cariResponden.addEventListener(
+        "input",
+        function () {
+
+            updateDashboard();
+
+        }
+    );
+}
+
+
+/* =====================================================
+   17. FILTER UNIT KERJA
+===================================================== */
+
+if (filterUnitKerja) {
+
+    filterUnitKerja.addEventListener(
+        "change",
+        function () {
+
+            updateDashboard();
+
+        }
+    );
+}
+
+
+/* =====================================================
+   18. DETAIL RESPONDEN
+===================================================== */
+
+function bukaDetail(id) {
 
     const data =
-        dataTerfilter[index];
+        rekapan.find(
+            item =>
+                item.id === id
+        );
 
 
     if (!data) {
 
-        return;
+        console.error(
+            "Data responden tidak ditemukan:",
+            id
+        );
 
+        return;
     }
 
 
-    const profil =
-        ambilProfil(
-            data
-        );
-
-
-    const interpretasi =
-        interpretasiProfil[
-            profil
-        ];
-
-
-    /*
-     * IDENTITAS
-     */
-
     if (detailNama) {
-
         detailNama.textContent =
-            data.nama ||
-            "-";
-
+            data.nama || "-";
     }
 
 
     if (detailUnitKerja) {
-
         detailUnitKerja.textContent =
-            data.unitKerja ||
-            "-";
-
+            data.unitKerja || "-";
     }
 
 
     if (detailEmail) {
-
         detailEmail.textContent =
-            data.email ||
-            "-";
-
+            data.email || "-";
     }
 
 
     if (detailKategori) {
-
         detailKategori.textContent =
-            profil +
-            (
-                interpretasi
-                    ? " — " +
-                      interpretasi.nama
-                    : ""
-            );
-
+            data.kategori || "-";
     }
 
 
     if (detailTotal) {
-
         detailTotal.textContent =
-            data.totalSkor ??
-            "-";
-
+            data.totalSkor ?? "-";
     }
 
 
     if (detailTanggal) {
-
         detailTanggal.textContent =
-            formatTanggal(
-                data.timestamp
-            );
-
+            data.tanggal || "-";
     }
 
-
-    /*
-     * INTERPRETASI
-     */
-
-    if (detailInterpretasi) {
-
-        if (interpretasi) {
-
-            detailInterpretasi.innerHTML = `
-
-                <div class="detail-interpretasi-inner">
-
-                    <span>
-                        PROFIL ${escapeHTML(
-                            profil
-                        )}
-                    </span>
-
-                    <h3>
-                        ${escapeHTML(
-                            interpretasi.nama
-                        )}
-                    </h3>
-
-                    <p>
-                        ${escapeHTML(
-                            data.ringkasanKategori ||
-                            interpretasi.ringkasan
-                        )}
-                    </p>
-
-                    <p>
-                        ${escapeHTML(
-                            data.deskripsiKategori ||
-                            interpretasi.deskripsi
-                        )}
-                    </p>
-
-                </div>
-
-            `;
-
-        } else {
-
-            detailInterpretasi.innerHTML =
-                "";
-
-        }
-
-    }
-
-
-    /*
-     * JAWABAN
-     */
-
-    tampilkanDetailJawaban(
-        data.jawaban
-    );
-
-
-    /*
-     * BUKA MODAL
-     */
-
-    if (modalDetail) {
-
-        modalDetail.classList.remove(
-            "hidden"
-        );
-
-
-        document.body.classList.add(
-            "modal-open"
-        );
-
-    }
-
-}
-
-
-/* =====================================================
-   21. DETAIL JAWABAN
-===================================================== */
-
-function tampilkanDetailJawaban(
-    jawaban
-) {
 
     if (!detailJawaban) {
-
         return;
-
     }
 
 
-    detailJawaban.innerHTML =
-        "";
+    detailJawaban.innerHTML = "";
 
 
     if (
-        !Array.isArray(jawaban) ||
-        jawaban.length === 0
+        !Array.isArray(
+            data.jawaban
+        ) ||
+        data.jawaban.length === 0
     ) {
 
         detailJawaban.innerHTML = `
@@ -1608,98 +952,104 @@ function tampilkanDetailJawaban(
             <div class="detail-kosong">
 
                 <p>
-                    Detail jawaban tidak tersedia.
+                    Detail jawaban tidak tersedia
+                    untuk data responden ini.
                 </p>
 
             </div>
 
         `;
 
-        return;
+    } else {
 
-    }
+        data.jawaban.forEach(
+            function (item) {
+
+                const card =
+                    document.createElement(
+                        "div"
+                    );
 
 
-    jawaban.forEach(
-        function (item) {
-
-            const card =
-                document.createElement(
-                    "div"
+                card.classList.add(
+                    "detail-soal-card"
                 );
 
 
-            card.className =
-                "detail-soal-card";
+                card.innerHTML = `
+
+                    <div class="detail-soal-header">
+
+                        <strong>
+                            Soal ${escapeHTML(
+                                item.no
+                            )}
+                        </strong>
+
+                        <span>
+                            Skor ${escapeHTML(
+                                item.skor
+                            )}
+                        </span>
+
+                    </div>
 
 
-            card.innerHTML = `
-
-                <div class="detail-soal-header">
-
-                    <strong>
-                        Soal ${escapeHTML(
-                            item.no
-                        )}
-                    </strong>
-
-                    <span>
-                        Skor ${escapeHTML(
-                            item.skor
-                        )}
-                    </span>
-
-                </div>
-
-
-                <p class="detail-pertanyaan">
-
-                    ${escapeHTML(
-                        item.pertanyaan
-                    )}
-
-                </p>
-
-
-                <div class="detail-jawaban-text">
-
-                    <span>
-                        Jawaban
-                    </span>
-
-                    <strong>
+                    <p class="detail-pertanyaan">
 
                         ${escapeHTML(
-                            item.jawaban
+                            item.pertanyaan
                         )}
 
-                    </strong>
-
-                </div>
-
-            `;
+                    </p>
 
 
-            detailJawaban.appendChild(
-                card
-            );
+                    <div class="detail-jawaban-text">
 
-        }
-    );
+                        <span>
+                            Jawaban
+                        </span>
 
+                        <strong>
+                            ${escapeHTML(
+                                item.jawaban
+                            )}
+                        </strong>
+
+                    </div>
+
+                `;
+
+
+                detailJawaban.appendChild(
+                    card
+                );
+            }
+        );
+    }
+
+
+    if (modalDetail) {
+
+        modalDetail.classList.remove(
+            "hidden"
+        );
+
+        document.body.classList.add(
+            "modal-open"
+        );
+    }
 }
 
 
 /* =====================================================
-   22. TUTUP MODAL
+   19. TUTUP MODAL
 ===================================================== */
 
 function tutupModal() {
 
     if (!modalDetail) {
-
         return;
-
     }
 
 
@@ -1711,7 +1061,6 @@ function tutupModal() {
     document.body.classList.remove(
         "modal-open"
     );
-
 }
 
 
@@ -1721,7 +1070,6 @@ if (tutupModalBtn) {
         "click",
         tutupModal
     );
-
 }
 
 
@@ -1731,8 +1079,13 @@ if (tutupModalBtnBottom) {
         "click",
         tutupModal
     );
-
 }
+
+
+const modalOverlay =
+    document.querySelector(
+        ".modal-overlay"
+    );
 
 
 if (modalOverlay) {
@@ -1741,13 +1094,8 @@ if (modalOverlay) {
         "click",
         tutupModal
     );
-
 }
 
-
-/* =====================================================
-   23. ESCAPE UNTUK TUTUP MODAL
-===================================================== */
 
 document.addEventListener(
     "keydown",
@@ -1762,77 +1110,28 @@ document.addEventListener(
         ) {
 
             tutupModal();
-
         }
-
     }
 );
 
 
 /* =====================================================
-   24. PENCARIAN
+   20. EXPORT CSV
 ===================================================== */
 
-if (cariResponden) {
-
-    cariResponden.addEventListener(
-        "input",
-        function () {
-
-            updateDashboard();
-
-        }
-    );
-
-}
-
-
-/* =====================================================
-   25. FILTER UNIT KERJA
-===================================================== */
-
-if (filterUnitKerja) {
-
-    filterUnitKerja.addEventListener(
-        "change",
-        function () {
-
-            updateDashboard();
-
-        }
-    );
-
-}
-
-
-/* =====================================================
-   26. EXPORT CSV
-===================================================== */
-
-function csvEscape(
-    value
-) {
+function csvEscape(text) {
 
     if (
-        value === null ||
-        value === undefined
+        text === null ||
+        text === undefined
     ) {
 
         return "";
-
     }
 
 
-    return (
-        '"' +
-        String(value)
-            .replace(
-                /"/g,
-                '""'
-            ) +
-        '"'
-    );
-
+    return `"${String(text)
+        .replace(/"/g, '""')}"`;
 }
 
 
@@ -1846,16 +1145,13 @@ if (exportBtn) {
                 ambilDataTerfilter();
 
 
-            if (
-                data.length === 0
-            ) {
+            if (data.length === 0) {
 
                 alert(
                     "Tidak ada data yang dapat diekspor."
                 );
 
                 return;
-
             }
 
 
@@ -1865,7 +1161,7 @@ if (exportBtn) {
 
             data.forEach(
                 function (
-                    item,
+                    responden,
                     index
                 ) {
 
@@ -1874,33 +1170,28 @@ if (exportBtn) {
                         index + 1,
 
                         csvEscape(
-                            item.nama
+                            responden.nama
                         ),
 
                         csvEscape(
-                            item.unitKerja
+                            responden.unitKerja
                         ),
 
                         csvEscape(
-                            item.email
+                            responden.email
                         ),
 
-                        item.totalSkor,
+                        responden.totalSkor,
 
                         csvEscape(
-                            ambilProfil(
-                                item
-                            )
+                            responden.kategori
                         ),
 
                         csvEscape(
-                            formatTanggal(
-                                item.timestamp
-                            )
+                            responden.tanggal
                         )
 
                     ].join(",") + "\n";
-
                 }
             );
 
@@ -1908,7 +1199,7 @@ if (exportBtn) {
             const blob =
                 new Blob(
                     [
-                        "\uFEFF" +
+                        "\uFEFF",
                         csv
                     ],
                     {
@@ -1930,16 +1221,10 @@ if (exportBtn) {
                 );
 
 
-            link.href =
-                url;
-
+            link.href = url;
 
             link.download =
-                "rekapan-pola-pikir-" +
-                new Date()
-                    .toISOString()
-                    .slice(0, 10) +
-                ".csv";
+                "rekapan-pola-pikir.csv";
 
 
             document.body.appendChild(
@@ -1958,15 +1243,13 @@ if (exportBtn) {
             URL.revokeObjectURL(
                 url
             );
-
         }
     );
-
 }
 
 
 /* =====================================================
-   27. KEMBALI KE HALAMAN UTAMA
+   21. KEMBALI
 ===================================================== */
 
 if (kembaliBtn) {
@@ -1980,12 +1263,11 @@ if (kembaliBtn) {
 
         }
     );
-
 }
 
 
 /* =====================================================
-   28. LOGOUT ADMIN
+   22. LOGOUT
 ===================================================== */
 
 if (logoutBtn) {
@@ -1994,6 +1276,17 @@ if (logoutBtn) {
         "click",
         function () {
 
+            const yakin =
+                confirm(
+                    "Apakah Anda yakin ingin logout?"
+                );
+
+
+            if (!yakin) {
+                return;
+            }
+
+
             sessionStorage.removeItem(
                 "adminLogin"
             );
@@ -2001,15 +1294,62 @@ if (logoutBtn) {
 
             window.location.href =
                 "admin.html";
-
         }
     );
-
 }
 
 
 /* =====================================================
-   29. JALANKAN SAAT HALAMAN DIBUKA
+   23. AUTO REFRESH API
+===================================================== */
+
+/*
+   Dashboard mengambil data terbaru
+   dari server setiap 10 detik.
+*/
+
+setInterval(
+    function () {
+
+        ambilRekapan();
+
+    },
+    10000
+);
+
+
+/* =====================================================
+   24. REFRESH SAAT TAB AKTIF
+===================================================== */
+
+window.addEventListener(
+    "focus",
+    function () {
+
+        ambilRekapan();
+
+    }
+);
+
+
+document.addEventListener(
+    "visibilitychange",
+    function () {
+
+        if (
+            document.visibilityState ===
+            "visible"
+        ) {
+
+            ambilRekapan();
+
+        }
+    }
+);
+
+
+/* =====================================================
+   25. LOAD PERTAMA
 ===================================================== */
 
 document.addEventListener(
@@ -2017,23 +1357,28 @@ document.addEventListener(
     function () {
 
         console.log(
-            "===================================="
+            "================================"
         );
 
         console.log(
-            "REKAPAN POLA PIKIR"
+            "REKAPAN ADMIN"
         );
 
         console.log(
-            "Dashboard terhubung ke API"
+            "Menghubungkan ke API..."
         );
 
         console.log(
-            "===================================="
+            "API:",
+            API_URL
+        );
+
+        console.log(
+            "================================"
         );
 
 
-        ambilDataAPI();
+        ambilRekapan();
 
     }
 );
