@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="Kuesioner dan analisis profil pola pikir."
+    >
+
+    <title>
+        Analisis Pola Pikir
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+</head>
+
+
+<body>
+
+
+<main class="container">
+
+
+    <!-- =====================================================
+         1. HALAMAN AWAL
+    ====================================================== -->
+
+    <section
+        id="halamanAwal"
+        class="page"
+    >
+
+        <div class="page-header">
+
+            <h1>
+                Analisis Pola Pikir
+            </h1>
+
+            <p>
+                Kenali profil pola pikir Anda melalui
+                kuesioner pemetaan pola pikir.
+            </p>
+
+        </div>
+
+
+        <button
+            id="mulaiBtn"
+            type="button"
+            class="primary-btn"
+        >
+            Mulai Analisis
+        </button>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         2. DATA RESPONDEN
+    ====================================================== -->
+
+    <section
+        id="formResponden"
+        class="page hidden"
+    >
+
+        <div class="page-header">
+
+            <h1>
+                Data Responden
+            </h1>
+
+            <p>
+                Silakan isi data diri sebelum memulai
+                kuesioner.
+            </p>
+
+        </div>
+
+
+        <form id="dataForm">
+
+
+            <!-- NAMA -->
+
+            <div class="form-group">
+
+                <label for="nama">
+                    Nama Lengkap
+                </label>
+
+                <input
+                    type="text"
+                    id="nama"
+                    name="nama"
+                    placeholder="Masukkan nama lengkap"
+                    autocomplete="name"
+                    required
+                >
+
+            </div>
+
+
+
+            <!-- UNIT KERJA -->
+
+            <div class="form-group">
+
+                <label for="unitKerja">
+                    Unit Kerja
+                </label>
+
+                <input
+                    type="text"
+                    id="unitKerja"
+                    name="unitKerja"
+                    placeholder="Masukkan unit kerja"
+                    required
+                >
+
+            </div>
+
+
+
+            <!-- EMAIL -->
+
+            <div class="form-group">
+
+                <label for="email">
+                    Email
+                </label>
+
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="Masukkan alamat email"
+                    autocomplete="email"
+                    required
+                >
+
+            </div>
+
+
+
+            <button
+                type="submit"
+                class="primary-btn"
+            >
+                Lanjut ke Kuesioner
+            </button>
+
+        </form>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         3. KUESIONER
+    ====================================================== -->
+
+    <section
+        id="halamanKuesioner"
+        class="page hidden"
+    >
+
+        <div class="page-header">
+
+            <h1>
+                Kuesioner Pola Pikir
+            </h1>
+
+            <p>
+                Bacalah setiap pernyataan dengan seksama.
+                Pilih jawaban yang paling sesuai dengan
+                pendapat Anda.
+            </p>
+
+        </div>
+
+
+        <!--
+            20 pertanyaan dibuat secara otomatis
+            oleh script.js
+        -->
+
+        <div id="daftarSoal"></div>
+
+
+        <button
+            id="submitKuesioner"
+            type="button"
+            class="primary-btn"
+        >
+            Lihat Hasil
+        </button>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         4. HASIL ANALISIS
+    ====================================================== -->
+
+    <section
+        id="halamanHasil"
+        class="page hidden"
+    >
+
+
+        <!-- HEADER HASIL -->
+
+        <div class="page-header result-header">
+
+            <h1>
+                Hasil Analisis
+            </h1>
+
+            <p>
+                Berikut adalah hasil pemetaan profil
+                pola pikir Anda.
+            </p>
+
+        </div>
+
+
+
+        <!-- SAPAAN -->
+
+        <div class="result-greeting">
+
+            <p>
+                Terima kasih,
+                <strong id="namaHasil">
+                    -
+                </strong>.
+            </p>
+
+            <span>
+                Hasil kuesioner Anda telah berhasil
+                dianalisis.
+            </span>
+
+        </div>
+
+
+
+        <!-- =================================================
+             HASIL UTAMA
+        ================================================== -->
+
+        <div class="result-main-card">
+
+            <div class="result-label">
+                PROFIL POLA PIKIR
+            </div>
+
+
+            <div
+                id="kategoriHasil"
+                class="result-category"
+            >
+                -
+            </div>
+
+
+            <div class="result-total-label">
+                Grand Total
+            </div>
+
+
+            <div
+                id="totalHasil"
+                class="result-total"
+            >
+                0
+            </div>
+
+
+            <div class="result-score-info">
+                dari maksimum 60
+            </div>
+
+        </div>
+
+
+
+        <!-- =================================================
+             RINGKASAN HASIL
+        ================================================== -->
+
+        <div class="result-info-card">
+
+            <h3>
+                Ringkasan Hasil
+            </h3>
+
+            <p id="ringkasanHasil">
+                -
+            </p>
+
+        </div>
+
+
+
+        <!-- =================================================
+             INTERPRETASI
+        ================================================== -->
+
+        <div class="result-info-card">
+
+            <h3>
+                Interpretasi
+            </h3>
+
+            <p id="deskripsiHasil">
+                -
+            </p>
+
+        </div>
+
+
+
+        <!-- =================================================
+             INFORMASI KATEGORI
+        ================================================== -->
+
+        <div class="result-info-card">
+
+            <h3>
+                Rentang Kategori
+            </h3>
+
+            <div class="kategori-list">
+
+                <div class="kategori-item">
+
+                    <strong>
+                        F
+                    </strong>
+
+                    <span>
+                        0–20
+                    </span>
+
+                </div>
+
+
+                <div class="kategori-item">
+
+                    <strong>
+                        FG
+                    </strong>
+
+                    <span>
+                        21–33
+                    </span>
+
+                </div>
+
+
+                <div class="kategori-item">
+
+                    <strong>
+                        GF
+                    </strong>
+
+                    <span>
+                        34–44
+                    </span>
+
+                </div>
+
+
+                <div class="kategori-item">
+
+                    <strong>
+                        G
+                    </strong>
+
+                    <span>
+                        45–60
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =================================================
+             CATATAN
+        ================================================== -->
+
+        <div class="result-note">
+
+            <strong>
+                Catatan
+            </strong>
+
+            <p>
+                Hasil ini merupakan pemetaan berdasarkan
+                jawaban yang diberikan pada kuesioner.
+                Profil yang ditampilkan merupakan gambaran
+                kecenderungan pola pikir berdasarkan skor
+                yang diperoleh dan bukan merupakan diagnosis
+                atau penilaian mutlak terhadap individu.
+            </p>
+
+        </div>
+
+
+
+        <!-- =================================================
+             SELESAI
+        ================================================== -->
+
+        <button
+            id="selesaiBtn"
+            type="button"
+            class="primary-btn"
+        >
+            Selesai
+        </button>
+
+    </section>
+
+
+</main>
+
+
+
+<!-- =====================================================
+     JAVASCRIPT
+====================================================== -->
+
+<script src="script.js"></script>
+
+
+</body>
+
+</html>
