@@ -15,13 +15,23 @@
         content="Kuesioner dan analisis profil pola pikir."
     >
 
+    <meta
+        name="theme-color"
+        content="#f4f7fb"
+    >
+
     <title>
         Analisis Pola Pikir
     </title>
 
+
+    <!-- =====================================================
+         CSS
+    ====================================================== -->
+
     <link
         rel="stylesheet"
-        href="style.css"
+        href="style.css?v=4"
     >
 
 </head>
@@ -91,7 +101,10 @@
         </div>
 
 
-        <form id="dataForm">
+        <form
+            id="dataForm"
+            novalidate
+        >
 
 
             <!-- NAMA -->
@@ -156,6 +169,8 @@
 
 
 
+            <!-- BUTTON -->
+
             <button
                 type="submit"
                 class="primary-btn"
@@ -193,13 +208,22 @@
         </div>
 
 
-        <!--
-            20 pertanyaan dibuat secara otomatis
-            oleh script.js
-        -->
+        <!-- =================================================
+             DAFTAR SOAL
+             
+             Soal dibuat otomatis oleh script.js
+        ================================================== -->
 
-        <div id="daftarSoal"></div>
+        <div
+            id="daftarSoal"
+            class="question-list"
+        ></div>
 
+
+
+        <!-- =================================================
+             SUBMIT KUESIONER
+        ================================================== -->
 
         <button
             id="submitKuesioner"
@@ -223,9 +247,13 @@
     >
 
 
-        <!-- HEADER HASIL -->
+        <!-- =================================================
+             HEADER HASIL
+        ================================================== -->
 
-        <div class="page-header result-header">
+        <div
+            class="page-header result-header"
+        >
 
             <h1>
                 Hasil Analisis
@@ -240,15 +268,20 @@
 
 
 
-        <!-- SAPAAN -->
+        <!-- =================================================
+             SAPAAN RESPONDEN
+        ================================================== -->
 
         <div class="result-greeting">
 
             <p>
+
                 Terima kasih,
+
                 <strong id="namaHasil">
                     -
                 </strong>.
+
             </p>
 
             <span>
@@ -337,7 +370,7 @@
 
 
         <!-- =================================================
-             INFORMASI KATEGORI
+             RENTANG KATEGORI
         ================================================== -->
 
         <div class="result-info-card">
@@ -346,7 +379,11 @@
                 Rentang Kategori
             </h3>
 
+
             <div class="kategori-list">
+
+
+                <!-- F -->
 
                 <div class="kategori-item">
 
@@ -361,6 +398,9 @@
                 </div>
 
 
+
+                <!-- FG -->
+
                 <div class="kategori-item">
 
                     <strong>
@@ -374,6 +414,9 @@
                 </div>
 
 
+
+                <!-- GF -->
+
                 <div class="kategori-item">
 
                     <strong>
@@ -386,6 +429,9 @@
 
                 </div>
 
+
+
+                <!-- G -->
 
                 <div class="kategori-item">
 
@@ -449,9 +495,15 @@
 
 <!-- =====================================================
      JAVASCRIPT
+     
+     v=4 digunakan untuk memaksa browser mengambil
+     script.js terbaru dari GitHub Pages.
 ====================================================== -->
 
-<script src="script.js"></script>
+<script
+    src="script.js?v=4"
+    defer
+></script>
 
 
 </body>
